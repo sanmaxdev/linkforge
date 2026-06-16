@@ -134,16 +134,19 @@ class GeoResolver
     private function databasePath(): ?string
     {
         $path = (string) config('linkforge.geo.db_path');
-        if ($path === '') {
-            return null;
+        if ($path !== '') {
+            // Resolve relative paths from the project root.
+            $isAbsolute = str_starts_with($path, '/') || preg_match('/^[A-Za-z]:[\\\\\/]/', $path);
+            if (! $isAbsolute) {
+                $path = base_path($path);
+            }
+            if (is_file($path)) {
+                return $path;
+            }
         }
 
-        // Resolve relative paths from the project root.
-        $isAbsolute = str_starts_with($path, '/') || preg_match('/^[A-Za-z]:[\\\\\/]/', $path);
-        if (! $isAbsolute) {
-            $path = base_path($path);
-        }
-
-        return is_file($path) ? $path : null;
+        // Zero-config fallback: any .mmdb dropped into storage/app/geoip/ is used
+        // automatically, so an operator can enable geo without editing .env.
+        return (glob(storage_path('app/geoip/*.mmdb')) ?: [])[0] ?? null;
     }
 }

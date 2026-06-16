@@ -22,7 +22,7 @@ return [
 
     // Shipped version. The applied version is tracked in the `app_version` setting
     // and bumped by the in-app updater; this is the floor for a fresh install.
-    'version' => '1.0.4',
+    'version' => '1.0.5',
     'tagline' => env('LF_TAGLINE', 'Forge links that work harder.'),
     'description' => env('LF_DESCRIPTION', 'A premium, AI-native link platform with branded domains, deep analytics, a QR studio and safety scanning, on hosting you own.'),
 

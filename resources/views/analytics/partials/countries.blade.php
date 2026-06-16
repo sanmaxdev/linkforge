@@ -16,7 +16,10 @@
         <div class="lf-card p-5">
             <h3 class="text-sm font-semibold text-slate-900">Top countries</h3>
             @if (empty($top))
-                <p class="mt-3 text-sm text-slate-400">No data yet.</p>
+                <div class="mt-3 flex items-start gap-2 text-sm text-slate-400">
+                    <svg class="mt-0.5 h-4 w-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+                    <span>No country data yet. Geo needs a source: put the site behind Cloudflare, or drop a GeoLite2 / DB-IP <code class="text-xs">.mmdb</code> file into <code class="text-xs">storage/app/geoip/</code> (no config needed).</span>
+                </div>
             @else
                 <div class="mt-4 space-y-2.5">
                     @foreach ($top as $code => $clicks)
