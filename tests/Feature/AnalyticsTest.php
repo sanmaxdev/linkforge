@@ -213,6 +213,24 @@ class AnalyticsTest extends TestCase
         $this->assertInstanceOf(\Symfony\Component\HttpFoundation\StreamedResponse::class, $response);
     }
 
+    public function test_analytics_rolls_up_on_read_when_no_cron_has_run(): void
+    {
+        // Clicks are recorded raw + the denormalised counter, but the charts read
+        // the rollup tables. On shared hosting without a working cron the rollup
+        // never ran, so analytics showed 0 despite real clicks. The read must
+        // self-heal by rolling up on demand.
+        $owner = User::factory()->create();
+        $link = $this->link($owner);
+        $this->click($link->id, ['ip_hash' => 'a']);
+        $this->click($link->id, ['ip_hash' => 'b']);
+        // Deliberately do NOT run clicks:rollup here.
+
+        $this->actingAs($owner)->get(route('links.stats', $link))->assertOk();
+
+        // Viewing analytics rolled the clicks up on its own.
+        $this->assertDatabaseHas('stat_daily', ['link_id' => $link->id, 'clicks' => 2, 'uniques' => 2]);
+    }
+
     public function test_qr_code_has_its_own_analytics_scoped_to_its_link(): void
     {
         $owner = User::factory()->create();

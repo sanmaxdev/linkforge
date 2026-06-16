@@ -4,6 +4,7 @@ namespace App\Services\Analytics;
 
 use Closure;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -12,9 +13,33 @@ use Illuminate\Support\Facades\DB;
  */
 class AnalyticsService
 {
+    private bool $rolledUp = false;
+
+    /**
+     * Bring the click rollups up to date on demand, so analytics shows data even
+     * when the scheduled clicks:rollup task is not running (common on shared
+     * hosting without a working cron). Runs at most once per request; the rollup
+     * is incremental + idempotent, so it is a cheap no-op when nothing is new and
+     * never blocks the read if it fails.
+     */
+    private function ensureFresh(): void
+    {
+        if ($this->rolledUp) {
+            return;
+        }
+        $this->rolledUp = true;
+
+        try {
+            Artisan::call('clicks:rollup');
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
     /** @return array{clicks:int, uniques:int, bots:int} */
     public function totals(Closure $scope, Carbon $from, Carbon $to): array
     {
+        $this->ensureFresh();
         $q = DB::table('stat_daily')->whereBetween('day', [$from->toDateString(), $to->toDateString()]);
         $scope($q);
 
@@ -26,6 +51,7 @@ class AnalyticsService
     /** @return list<array{day:string, clicks:int, uniques:int}>  (gap-filled) */
     public function series(Closure $scope, Carbon $from, Carbon $to): array
     {
+        $this->ensureFresh();
         $q = DB::table('stat_daily')->whereBetween('day', [$from->toDateString(), $to->toDateString()]);
         $scope($q);
 
@@ -57,6 +83,7 @@ class AnalyticsService
      */
     public function dimensionFull(Closure $scope, Carbon $from, Carbon $to, string $dimension): array
     {
+        $this->ensureFresh();
         $q = DB::table('stat_dimension')
             ->whereBetween('day', [$from->toDateString(), $to->toDateString()])
             ->where('dimension', $dimension);
@@ -73,6 +100,7 @@ class AnalyticsService
     /** @return array<string, list<array{label:string, clicks:int}>> */
     public function dimensions(Closure $scope, Carbon $from, Carbon $to, int $perDimension = 8): array
     {
+        $this->ensureFresh();
         $q = DB::table('stat_dimension')->whereBetween('day', [$from->toDateString(), $to->toDateString()]);
         $scope($q);
 
