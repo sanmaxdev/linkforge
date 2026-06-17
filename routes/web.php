@@ -183,6 +183,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/languages/{code}', [LanguageController::class, 'destroy'])->name('languages.destroy')->where('code', '[A-Za-z-]+');
     Route::get('/settings', [SettingController::class, 'index'])->name('settings');
     Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('/settings/geo/update', [SettingController::class, 'updateGeoDatabase'])->name('settings.geo.update');
 });
 
 // Public: switch the UI language (guest + authenticated).

@@ -159,8 +159,9 @@ class RoutingAndSafetyTest extends TestCase
 
         $this->assertSame('DE', $geo->country('1.2.3.4', 'DE'));
         $this->assertSame('GB', $geo->country(null, 'gb'));   // case-normalized
-        $this->assertNull($geo->country('1.2.3.4', 'XX'));    // Cloudflare "unknown"
+        $this->assertNull($geo->country('127.0.0.1', 'XX'));  // Cloudflare "unknown" ignored; localhost has no DB result
         $this->assertNull($geo->country('127.0.0.1', null));  // local IP, no header, no DB
+        $this->assertSame('US', $geo->country('8.8.8.8'));    // falls back to the bundled DB
     }
 
     public function test_redirect_geo_targets_using_cloudflare_header(): void

@@ -18,3 +18,5 @@ Schedule::command('clicks:rollup')->everyTenMinutes()->withoutOverlapping();
 Schedule::command('clicks:prune')->dailyAt('03:30');
 Schedule::command('safety:rescan')->hourly()->withoutOverlapping();
 Schedule::command('ai:weekly-insights')->weeklyOn(1, '07:00')->withoutOverlapping();
+// Refresh the GeoIP database monthly (providers publish new data at the start of each month).
+Schedule::command('geoip:update')->monthlyOn(3, '04:00')->withoutOverlapping();

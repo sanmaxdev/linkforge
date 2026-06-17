@@ -133,6 +133,7 @@ class GeoResolver
 
     private function databasePath(): ?string
     {
+        // 1. Explicit override via config/env.
         $path = (string) config('linkforge.geo.db_path');
         if ($path !== '') {
             // Resolve relative paths from the project root.
@@ -145,8 +146,15 @@ class GeoResolver
             }
         }
 
-        // Zero-config fallback: any .mmdb dropped into storage/app/geoip/ is used
-        // automatically, so an operator can enable geo without editing .env.
-        return (glob(storage_path('app/geoip/*.mmdb')) ?: [])[0] ?? null;
+        // 2. Operator-managed / auto-updated DB (the in-app updater writes here, and
+        //    it takes precedence over the bundled seed so a City upgrade wins).
+        $managed = (glob(storage_path('app/geoip/*.mmdb')) ?: [])[0] ?? null;
+        if ($managed) {
+            return $managed;
+        }
+
+        // 3. The small country DB bundled with the app, so country geo + the map
+        //    work out of the box with zero setup.
+        return (glob(base_path('database/geoip/*.mmdb')) ?: [])[0] ?? null;
     }
 }

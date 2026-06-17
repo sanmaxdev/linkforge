@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\EmailTemplate;
 use App\Models\Setting;
+use App\Services\Analytics\GeoipUpdater;
 use App\Support\EmailEvents;
 use App\Support\ThemePalette;
 use Illuminate\Http\Request;
@@ -22,6 +23,7 @@ class SettingController extends Controller
         'billing' => 'Billing',
         'ai' => 'AI',
         'email' => 'Email',
+        'geo' => 'Geo',
         'seo' => 'SEO',
     ];
 
@@ -43,7 +45,7 @@ class SettingController extends Controller
         'stripe_secret', 'stripe_webhook_secret', 'ai_key', 'mail_password',
         'paypal_secret', 'coinpayments_private_key', 'coinpayments_ipn_secret',
         'cryptocom_secret_key', 'cryptocom_webhook_secret', 'openrouter_key',
-        'google_client_secret',
+        'google_client_secret', 'geoip_maxmind_key',
     ];
 
     public function index(Request $request)
@@ -64,7 +66,16 @@ class SettingController extends Controller
             'aiProviders' => self::AI_PROVIDERS,
             'emailEvents' => EmailEvents::EVENTS,
             'emailTemplates' => collect(array_keys(EmailEvents::EVENTS))->mapWithKeys(fn ($k) => [$k => EmailTemplate::resolve($k)])->all(),
+            'geoProviders' => GeoipUpdater::PROVIDERS,
+            'geoEditions' => GeoipUpdater::EDITIONS,
+            'geoDetected' => $this->geoDatabasePresent(),
         ]);
+    }
+
+    /** Whether a GeoIP database is available (operator upload, auto-update, or the bundled seed). */
+    private function geoDatabasePresent(): bool
+    {
+        return ! empty(glob(storage_path('app/geoip/*.mmdb'))) || ! empty(glob(base_path('database/geoip/*.mmdb')));
     }
 
     public function update(Request $request)
@@ -78,6 +89,7 @@ class SettingController extends Controller
             'ai' => $this->saveAi($request),
             'email' => $this->saveEmail($request),
             'email_template' => $this->saveEmailTemplate($request),
+            'geo' => $this->saveGeo($request),
             'seo' => $this->saveSeo($request),
             default => back()->with('error', 'Unknown settings section.'),
         };
@@ -310,6 +322,38 @@ class SettingController extends Controller
         ]);
 
         return $this->done('seo', 'SEO settings saved.');
+    }
+
+    private function saveGeo(Request $request)
+    {
+        $data = $request->validate([
+            'geoip_provider' => ['required', Rule::in(array_keys(GeoipUpdater::PROVIDERS))],
+            'geoip_edition' => ['required', Rule::in(array_keys(GeoipUpdater::EDITIONS))],
+        ]);
+
+        $out = [
+            'geoip_provider' => $data['geoip_provider'],
+            'geoip_edition' => $data['geoip_edition'],
+        ];
+        $this->applySecret($out, $request, 'geoip_maxmind_key');
+        Setting::putMany($out);
+
+        return $this->done('geo', 'Geo settings saved. Use "Download / update database" to fetch it now.');
+    }
+
+    /** Download / refresh the GeoIP database on demand (the "Update now" button). */
+    public function updateGeoDatabase(GeoipUpdater $updater)
+    {
+        @set_time_limit(0); // the City database can take a minute to download + decompress
+
+        try {
+            $message = $updater->update(Setting::get('geoip_provider', 'dbip'), Setting::get('geoip_edition', 'country'));
+            AuditLog::record('geoip.update', $message);
+
+            return redirect()->route('admin.settings', ['tab' => 'geo'])->with('status', $message);
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.settings', ['tab' => 'geo'])->with('error', 'GeoIP update failed: '.$e->getMessage());
+        }
     }
 
     /**
