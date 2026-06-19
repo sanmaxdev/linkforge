@@ -47,9 +47,16 @@
         </div>
         <div>
             <p class="font-semibold text-slate-800">cPanel / shared hosting</p>
-            <p class="mt-1 text-xs text-slate-500">There is no true catch-all without root. Either (a) offer customers branded <span class="font-medium">subdomains of your own domain</span> via a wildcard subdomain (one-time), or (b) add each customer's domain yourself as an Alias / Addon pointing to LinkForge's <span class="font-mono">public/</span> folder, then run AutoSSL.</p>
+            <p class="mt-1 text-xs text-slate-500">There is no true catch-all without root. Either (a) offer customers branded <span class="font-medium">subdomains of your own domain</span> via a wildcard subdomain (one-time), or (b) add each customer's domain yourself as an Addon domain pointing to the document root below, then run AutoSSL. When LinkForge runs on a subdomain, use an Addon domain with a custom document root, not a plain Alias.</p>
         </div>
     </div>
+
+    @isset($docRoot)
+        <div class="mt-4 rounded-lg border border-slate-200 bg-white p-3 text-sm">
+            <span class="text-xs font-medium text-slate-400">This install's document root (point alias / addon domains here)</span>
+            <p class="mt-1 font-mono break-all text-slate-700">{{ $docRoot }}</p>
+        </div>
+    @endisset
 
     <p class="mt-4 text-xs text-slate-500">Full step-by-step for every scenario (main domain vs subdomain installs, VPS, cPanel, SSL) is in <span class="font-mono font-medium text-slate-700">CUSTOM-DOMAINS.md</span>, included in your download.</p>
 </div>

@@ -72,6 +72,7 @@ class SettingController extends Controller
             'geoDetected' => $this->geoDatabasePresent(),
             'appHost' => parse_url((string) config('app.url'), PHP_URL_HOST) ?: $request->getHost(),
             'autoServerIp' => $request->server('SERVER_ADDR'),
+            'docRoot' => public_path(),
         ]);
     }
 
