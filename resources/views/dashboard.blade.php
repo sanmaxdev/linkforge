@@ -1,6 +1,8 @@
 <x-app-layout title="Dashboard">
     <x-slot:header>{{ __('Dashboard') }}</x-slot:header>
 
+    <x-ad placement="dashboard" class="mb-6" />
+
     {{-- Header --}}
     <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AbuseReportController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdvertisementController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Admin\BillingController as AdminBillingController;
 use App\Http\Controllers\Admin\LanguageController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\DeveloperController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\Install\InstallController;
 use App\Http\Controllers\LinkController;
+use App\Http\Controllers\MonetizationController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PixelController;
 use App\Http\Controllers\QrController;
@@ -100,6 +102,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/domains/{domain}/verify', [DomainController::class, 'verify'])->name('domains.verify');
     Route::delete('/domains/{domain}', [DomainController::class, 'destroy'])->name('domains.destroy');
 
+    Route::get('/monetization', [MonetizationController::class, 'index'])->name('monetization.index');
+    Route::put('/monetization', [MonetizationController::class, 'update'])->name('monetization.update');
+
     Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
     Route::post('/billing/{plan}/subscribe', [BillingController::class, 'subscribe'])->name('billing.subscribe');
     Route::get('/billing/return/{gateway}', [BillingController::class, 'return'])->name('billing.return');
@@ -163,6 +168,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/billing', [AdminBillingController::class, 'index'])->name('billing');
     Route::put('/billing/subscriptions/{subscription}', [AdminBillingController::class, 'updateSubscription'])->name('billing.subscriptions.update');
     Route::put('/billing/payments/{payment}', [AdminBillingController::class, 'updatePayment'])->name('billing.payments.update');
+    Route::get('/ads', [AdvertisementController::class, 'index'])->name('ads');
+    Route::post('/ads/settings', [AdvertisementController::class, 'saveSettings'])->name('ads.settings');
+    Route::get('/ads/create', [AdvertisementController::class, 'create'])->name('ads.create');
+    Route::post('/ads', [AdvertisementController::class, 'store'])->name('ads.store');
+    Route::get('/ads/{ad}/edit', [AdvertisementController::class, 'edit'])->name('ads.edit');
+    Route::put('/ads/{ad}', [AdvertisementController::class, 'update'])->name('ads.update');
+    Route::post('/ads/{ad}/toggle', [AdvertisementController::class, 'toggle'])->name('ads.toggle');
+    Route::delete('/ads/{ad}', [AdvertisementController::class, 'destroy'])->name('ads.destroy');
     Route::get('/content', [ModerationController::class, 'index'])->name('moderation');
     Route::put('/content/bio/{bioPage}', [ModerationController::class, 'updateBioPage'])->name('moderation.bio.update');
     Route::delete('/content/qr/{qr}', [ModerationController::class, 'destroyQrCode'])->name('moderation.qr.destroy');

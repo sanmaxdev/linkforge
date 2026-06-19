@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Advertisement;
 use App\Models\BioPage;
 use App\Models\Link;
+use App\Models\Setting;
 use App\Services\Analytics\GeoResolver;
 use App\Services\Analytics\RecordClick;
 use App\Services\Analytics\UaParser;
@@ -88,11 +90,55 @@ class RedirectController extends Controller
         // page to fire on, so even a "direct" link must pass through the splash to track.
         $pixels = $link->relationLoaded('pixels') ? $link->pixels : $link->pixels()->get();
 
-        if ($link->type !== 'direct' || $pixels->isNotEmpty()) {
-            return response()->view('redirect.splash', ['target' => $target, 'pixels' => $pixels]);
+        $ad = $this->resolveAd($link);
+        if ($link->type !== 'direct' || $pixels->isNotEmpty() || $ad) {
+            return response()->view('redirect.splash', [
+                'target' => $target,
+                'pixels' => $pixels,
+                'ad' => $ad,
+                'skipSeconds' => $ad ? max(0, (int) Setting::get('ads_skip_seconds', 5)) : 0,
+            ]);
         }
 
         return redirect()->away($target, 302);
+    }
+
+    /**
+     * Which ad (if any) shows on the interstitial for this link:
+     *   - owner on an ad-free plan  -> their OWN ad code (the member monetizes their traffic)
+     *   - otherwise (free user)     -> the operator's ad unit (the operator monetizes the free tier)
+     * Returns a render spec ['code'=>?, 'image'=>?, 'url'=>?, 'own'=>bool] or null.
+     */
+    private function resolveAd(Link $link): ?array
+    {
+        if (Setting::get('ads_enabled') !== '1') {
+            return null;
+        }
+
+        $owner = $link->relationLoaded('user') ? $link->user : $link->user()->first();
+        if (! $owner) {
+            return null;
+        }
+
+        // Premium / ad-free: never show operator ads; show the member's own ad code if set.
+        if (app(\App\Services\Billing\PlanGate::class)->allows($owner, 'ad_free')) {
+            $own = trim((string) data_get($owner->settings, 'ad_code', ''));
+
+            return $own !== '' ? ['code' => $own, 'own' => true] : null;
+        }
+
+        // Free tier: the operator's ad. Count an impression after the response.
+        $op = Advertisement::activeFor('interstitial');
+        if (! $op) {
+            return null;
+        }
+        app()->terminating(fn () => $op->recordImpression());
+
+        if ($op->code) {
+            return ['code' => $op->code, 'own' => false];
+        }
+
+        return $op->imageUrl() ? ['image' => $op->imageUrl(), 'url' => $op->target_url, 'own' => false] : null;
     }
 
     /** Verify the password for a protected link and unlock it for the session. */

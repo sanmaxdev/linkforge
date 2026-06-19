@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PlanSeeder::class,
             SettingSeeder::class,
+            AdvertisementSeeder::class,
         ]);
 
         // Default system short-domain (where shared / free-tier links live).

@@ -79,6 +79,10 @@
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
                         {{ __('Billing') }}
                     </a>
+                    <a href="{{ route('monetization.index') }}" @class(['group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition','bg-brand-50 text-brand-700'=>$is('monetization.*'),'text-slate-600 hover:bg-slate-100 hover:text-slate-900'=>!$is('monetization.*')])>
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        {{ __('Monetization') }}
+                    </a>
                     <a href="{{ route('developer.index') }}" @class(['group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition','bg-brand-50 text-brand-700'=>$is('developer.*')||$is('tokens.*')||$is('webhooks.*'),'text-slate-600 hover:bg-slate-100 hover:text-slate-900'=>!($is('developer.*')||$is('tokens.*')||$is('webhooks.*'))])>
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
                         {{ __('Developer') }}
@@ -92,6 +96,8 @@
                 </div>
             </div>
         </nav>
+
+        <x-ad placement="sidebar" class="mx-3 mb-1" />
 
         @php
             $currentPlan = auth()->user()?->currentPlan();
@@ -165,6 +171,7 @@
         </main>
     </div>
 
+    @include('partials.ad-popup')
     @include('partials.confirm-dialog')
 </body>
 </html>

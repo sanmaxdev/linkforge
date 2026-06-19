@@ -29,6 +29,7 @@
                     ['admin.links', 'Links', 'M13.19 8.69a4.5 4.5 0 0 1 1.24 7.24l-4.5 4.5a4.5 4.5 0 0 1-6.36-6.36l1.75-1.76M10.81 15.31a4.5 4.5 0 0 1-1.24-7.24l4.5-4.5a4.5 4.5 0 0 1 6.36 6.36l-1.75 1.76'],
                     ['admin.plans', 'Plans & pricing', 'M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 7h.01'],
                     ['admin.billing', 'Billing & revenue', 'M2 7h20v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1zM2 7l1-3h18l1 3M6 15h4'],
+                    ['admin.ads', 'Advertisement', 'm3 11 18-5v12L3 14v-3zM11.6 16.8a3 3 0 1 1-5.8-1.6'],
                     ['admin.moderation', 'Content', 'M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 7h8M8 11h8M8 15h5'],
                     ['admin.tickets', 'Support', 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z', $openTickets],
                     ['admin.reports', 'Abuse reports', 'M4 22V4a2 2 0 0 1 2-2h12l-2 5 2 5H6'],

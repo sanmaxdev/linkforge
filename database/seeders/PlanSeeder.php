@@ -23,7 +23,7 @@ class PlanSeeder extends Seeder
                 ],
                 'features' => [
                     'custom_domains' => false, 'retargeting' => false, 'api' => false,
-                    'deep_links' => false, 'team' => false, 'white_label' => false,
+                    'deep_links' => false, 'team' => false, 'white_label' => false, 'ad_free' => false,
                 ],
             ],
             [
@@ -38,7 +38,7 @@ class PlanSeeder extends Seeder
                 ],
                 'features' => [
                     'custom_domains' => true, 'retargeting' => false, 'api' => true,
-                    'deep_links' => false, 'team' => false, 'white_label' => false,
+                    'deep_links' => false, 'team' => false, 'white_label' => false, 'ad_free' => true,
                 ],
             ],
             [
@@ -53,7 +53,7 @@ class PlanSeeder extends Seeder
                 ],
                 'features' => [
                     'custom_domains' => true, 'retargeting' => true, 'api' => true,
-                    'deep_links' => true, 'team' => true, 'white_label' => false,
+                    'deep_links' => true, 'team' => true, 'white_label' => false, 'ad_free' => true,
                 ],
             ],
             [
@@ -68,7 +68,7 @@ class PlanSeeder extends Seeder
                 ],
                 'features' => [
                     'custom_domains' => true, 'retargeting' => true, 'api' => true,
-                    'deep_links' => true, 'team' => true, 'white_label' => true,
+                    'deep_links' => true, 'team' => true, 'white_label' => true, 'ad_free' => true,
                 ],
             ],
         ];

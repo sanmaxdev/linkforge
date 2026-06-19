@@ -43,3 +43,6 @@ npm-debug.log
 yarn-error.log
 .DS_Store
 Thumbs.db
+
+# Local Claude Code / preview config
+/.claude

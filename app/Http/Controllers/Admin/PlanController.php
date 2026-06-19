@@ -29,6 +29,7 @@ class PlanController extends Controller
         'deep_links' => 'Deep links',
         'team' => 'Team / workspaces',
         'white_label' => 'White label (hide branding)',
+        'ad_free' => 'Ad-free + own ad code on links',
     ];
 
     public const INTERVALS = ['free' => 'Free', 'month' => 'Monthly', 'year' => 'Yearly', 'lifetime' => 'Lifetime'];
