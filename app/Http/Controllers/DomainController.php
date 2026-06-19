@@ -21,7 +21,23 @@ class DomainController extends Controller
             'allowed' => $this->gate->allows($user, 'custom_domains'),
             'canAdd' => $this->gate->allows($user, 'custom_domains') && $this->gate->canCreate($user, 'max_domains'),
             'token' => $this->verifyToken($user->id),
+            'appHost' => parse_url((string) config('app.url'), PHP_URL_HOST) ?: $request->getHost(),
+            'serverIp' => $this->serverIp($request),
+            'docRoot' => public_path(),
         ]);
+    }
+
+    /** Best-effort public IP of this server, for the buyer's A record. */
+    private function serverIp(Request $request): ?string
+    {
+        if ($ip = $request->server('SERVER_ADDR')) {
+            return $ip;
+        }
+
+        $host = parse_url((string) config('app.url'), PHP_URL_HOST) ?: $request->getHost();
+        $resolved = @gethostbyname($host);
+
+        return ($resolved && $resolved !== $host) ? $resolved : null;
     }
 
     public function store(Request $request)

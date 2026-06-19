@@ -61,16 +61,42 @@
         @endif
 
         <div class="lf-card p-6">
-            <h3 class="text-sm font-semibold text-slate-900">DNS setup</h3>
-            <p class="mt-1.5 text-sm text-slate-500">Add these records at your DNS provider, then click Verify.</p>
-            <div class="mt-4 space-y-3 text-sm">
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <span class="text-xs font-medium text-slate-400">CNAME</span>
-                    <p class="font-mono text-slate-700">@ &rarr; {{ request()->getHost() }}</p>
+            <h3 class="text-sm font-semibold text-slate-900">Connect your domain</h3>
+            <p class="mt-1.5 text-sm text-slate-500">Two steps: point the domain at this server (DNS), then add it to your hosting account so the server serves it from this app. Then click Verify.</p>
+
+            {{-- Step 1: DNS --}}
+            <div class="mt-5">
+                <p class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <span class="flex h-5 w-5 items-center justify-center rounded-full bg-brand-100 text-[11px] font-bold text-brand-700">1</span>
+                    Point the domain here (DNS provider)
+                </p>
+                <p class="mt-1.5 text-xs text-slate-400">Use a <span class="font-medium">CNAME</span> for a subdomain (e.g. <span class="font-mono">go.yourbrand.com</span>), or an <span class="font-medium">A record</span> to this server's IP for a root domain (e.g. <span class="font-mono">yourbrand.com</span>). Add the TXT record in both cases.</p>
+                <div class="mt-3 space-y-2 text-sm">
+                    <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                        <span class="text-xs font-medium text-slate-400">Subdomain &middot; CNAME</span>
+                        <p class="font-mono text-slate-700">go &rarr; {{ $appHost }}</p>
+                    </div>
+                    <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                        <span class="text-xs font-medium text-slate-400">Root domain &middot; A record</span>
+                        <p class="font-mono text-slate-700">@ &rarr; {{ $serverIp ?? 'your server IP (from your hosting panel)' }}</p>
+                    </div>
+                    <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                        <span class="text-xs font-medium text-slate-400">TXT (for verification)</span>
+                        <p class="font-mono break-all text-slate-700">@ &rarr; {{ $token }}</p>
+                    </div>
                 </div>
-                <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <span class="text-xs font-medium text-slate-400">TXT (for verification)</span>
-                    <p class="font-mono break-all text-slate-700">@ &rarr; {{ $token }}</p>
+            </div>
+
+            {{-- Step 2: Hosting --}}
+            <div class="mt-6">
+                <p class="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <span class="flex h-5 w-5 items-center justify-center rounded-full bg-brand-100 text-[11px] font-bold text-brand-700">2</span>
+                    Serve it from this app (hosting control panel)
+                </p>
+                <p class="mt-1.5 text-xs text-slate-400">In cPanel (or your panel), add the domain as an <span class="font-medium text-slate-600">Alias</span> of this site, or as an <span class="font-medium text-slate-600">Addon domain</span> whose <span class="font-medium text-slate-600">Document Root</span> is this app's public folder below. Without this step the domain shows your host's own 404 page. Then enable SSL for it (AutoSSL / Let's Encrypt).</p>
+                <div class="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm">
+                    <span class="text-xs font-medium text-slate-400">Document root for the alias / addon domain</span>
+                    <p class="font-mono break-all text-slate-700">{{ $docRoot }}</p>
                 </div>
             </div>
         </div>

@@ -57,6 +57,17 @@ class SaaSTest extends TestCase
         $this->assertDatabaseHas('domains', ['host' => 'go.example.com', 'user_id' => $pro->id, 'status' => 'pending']);
     }
 
+    public function test_custom_domains_page_explains_the_hosting_step(): void
+    {
+        $pro = User::factory()->create(['plan_id' => Plan::where('slug', 'pro')->value('id')]);
+
+        $this->actingAs($pro)->get(route('domains.index'))
+            ->assertOk()
+            ->assertSee('Serve it from this app')      // the hosting step
+            ->assertSee('Document root')               // the docroot to point the alias/addon at
+            ->assertSee(public_path());
+    }
+
     public function test_admin_area_requires_admin_role(): void
     {
         $this->actingAs(User::factory()->create())->get('/admin')->assertForbidden();
