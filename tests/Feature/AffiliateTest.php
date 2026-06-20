@@ -55,6 +55,28 @@ class AffiliateTest extends TestCase
         $this->assertSame(1, $ref->fresh()->referral_clicks);
     }
 
+    public function test_full_flow_register_via_link_then_upgrade_pays_commission(): void
+    {
+        $ref = $this->referrer();
+
+        // Register carrying the attribution cookie that /ref/{code} sets.
+        // withCookie() encrypts the value for us, mirroring a real browser cookie.
+        $this->withCookie('affiliate_ref', $ref->referral_code)->post('/register', [
+            'name' => 'Referred User',
+            'email' => 'referred@example.com',
+            'password' => 'forge-strong-pass-1',
+            'password_confirmation' => 'forge-strong-pass-1',
+        ])->assertRedirect('/dashboard');
+
+        $newUser = User::firstWhere('email', 'referred@example.com');
+        $this->assertSame($ref->id, $newUser->referred_by);
+
+        // When they upgrade, the referrer earns a commission.
+        app(BillingService::class)->activate($newUser, $this->paidPlan(), 'offline', 'CONV1');
+        $this->assertSame(1, ReferralCommission::where('referrer_id', $ref->id)
+            ->where('referred_user_id', $newUser->id)->count());
+    }
+
     public function test_signup_via_referral_is_attributed(): void
     {
         $ref = $this->referrer();

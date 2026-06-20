@@ -95,9 +95,9 @@ class MonetizationTest extends TestCase
         $this->houseAd(); // operator ad exists but must be suppressed for premium
         $u = $this->premiumUser();
 
-        $this->actingAs($u)->put(route('monetization.update'), ['ad_code' => '<i>MYADSENSE</i>'])
+        $this->actingAs($u)->put(route('monetization.update'), ['ad_slots' => ['<i>MYADSENSE</i>']])
             ->assertRedirect()->assertSessionHas('status');
-        $this->assertSame('<i>MYADSENSE</i>', data_get($u->fresh()->settings, 'ad_code'));
+        $this->assertSame(['<i>MYADSENSE</i>'], data_get($u->fresh()->settings, 'ad_slots'));
 
         $this->linkFor($u, 'ownad');
         $this->get('/ownad')->assertOk()
@@ -105,11 +105,44 @@ class MonetizationTest extends TestCase
             ->assertDontSee('BUYNOW', false);      // never the operator's ad
     }
 
+    public function test_member_can_save_multiple_ad_slots_and_empties_are_dropped(): void
+    {
+        $u = $this->premiumUser();
+
+        $this->actingAs($u)->put(route('monetization.update'), ['ad_slots' => ['<script>a()</script>', '', '<img src=x>']])
+            ->assertRedirect();
+
+        $this->assertSame(['<script>a()</script>', '<img src=x>'], data_get($u->fresh()->settings, 'ad_slots'));
+    }
+
+    public function test_multiple_member_ad_slots_render_on_the_interstitial(): void
+    {
+        Setting::put('ads_enabled', '1');
+        $u = $this->premiumUser();
+        $u->update(['settings' => ['ad_slots' => ['<script>adslotone()</script>', '<img src=banner>']]]);
+        $this->linkFor($u, 'multiad');
+
+        $this->get('/multiad')->assertOk()
+            ->assertSee('adslotone()', false)    // slot 1 (script)
+            ->assertSee('src=banner', false)     // slot 2 (escaped inside the srcdoc attribute)
+            ->assertSee('allow-scripts', false); // each slot in a sandboxed iframe
+    }
+
+    public function test_legacy_single_ad_code_still_renders(): void
+    {
+        Setting::put('ads_enabled', '1');
+        $u = $this->premiumUser();
+        $u->update(['settings' => ['ad_code' => '<script>legacyad()</script>']]); // old single-field format
+        $this->linkFor($u, 'legacyad');
+
+        $this->get('/legacyad')->assertOk()->assertSee('legacyad()', false);
+    }
+
     public function test_free_user_cannot_set_own_ad_code_and_sees_upsell(): void
     {
         $u = $this->freeUser();
-        $this->actingAs($u)->put(route('monetization.update'), ['ad_code' => '<i>x</i>'])->assertSessionHas('error');
-        $this->assertNull(data_get($u->fresh()->settings, 'ad_code'));
+        $this->actingAs($u)->put(route('monetization.update'), ['ad_slots' => ['<i>x</i>']])->assertSessionHas('error');
+        $this->assertEmpty(data_get($u->fresh()->settings, 'ad_slots', []));
         $this->actingAs($u)->get(route('monetization.index'))->assertOk()->assertSee('View plans');
     }
 
@@ -133,7 +166,7 @@ class MonetizationTest extends TestCase
         // Regression: paid users were wrongly sent to the upgrade page.
         $this->actingAs($this->premiumUser())->get(route('monetization.index'))
             ->assertOk()
-            ->assertSee('Your ad code')
+            ->assertSee('Your ad slots')
             ->assertDontSee('View plans');
     }
 

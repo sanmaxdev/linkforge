@@ -68,6 +68,29 @@ class BlogHelpTest extends TestCase
         $this->assertNotNull($post->published_at);
     }
 
+    public function test_admin_can_upload_a_cover_image(): void
+    {
+        $file = \Illuminate\Http\UploadedFile::fake()->image('cover.jpg', 800, 450);
+
+        $this->actingAs($this->admin())->post('/admin/blog', [
+            'title' => 'With Cover', 'status' => 'draft', 'body' => 'x', 'cover_file' => $file,
+        ])->assertRedirect(route('admin.blog.index'));
+
+        $cover = \App\Models\Post::where('title', 'With Cover')->value('cover_image');
+        $this->assertNotEmpty($cover);
+        $this->assertStringContainsString('uploads/blog/', $cover);
+        $this->assertFileExists(public_path(parse_url($cover, PHP_URL_PATH)));
+    }
+
+    public function test_cover_url_is_used_when_no_file_uploaded(): void
+    {
+        $this->actingAs($this->admin())->post('/admin/blog', [
+            'title' => 'URL Cover', 'status' => 'draft', 'body' => 'x', 'cover_image' => 'https://cdn.example.com/a.png',
+        ]);
+
+        $this->assertSame('https://cdn.example.com/a.png', \App\Models\Post::where('title', 'URL Cover')->value('cover_image'));
+    }
+
     public function test_draft_post_has_no_published_at(): void
     {
         $this->actingAs($this->admin())->post('/admin/blog', ['title' => 'A Draft', 'status' => 'draft', 'body' => 'hi']);

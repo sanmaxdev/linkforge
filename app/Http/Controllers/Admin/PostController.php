@@ -26,6 +26,8 @@ class PostController extends Controller
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['title']);
         $data['author_id'] = $request->user()->id;
         $data['published_at'] = $this->resolvePublishedAt($data);
+        $data['cover_image'] = $this->resolveCover($request, $data['cover_image'] ?? null);
+        unset($data['cover_file']);
         Post::create($data);
 
         return redirect()->route('admin.blog.index')->with('status', 'Post saved.');
@@ -41,6 +43,8 @@ class PostController extends Controller
         $data = $this->validatePost($request);
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['title'], $post->id);
         $data['published_at'] = $this->resolvePublishedAt($data, $post);
+        $data['cover_image'] = $this->resolveCover($request, $data['cover_image'] ?? null);
+        unset($data['cover_file']);
         $post->update($data);
 
         return redirect()->route('admin.blog.index')->with('status', 'Post updated.');
@@ -62,6 +66,7 @@ class PostController extends Controller
             'excerpt' => ['nullable', 'string', 'max:300'],
             'body' => ['nullable', 'string', 'max:60000'],
             'cover_image' => ['nullable', 'string', 'max:500'],
+            'cover_file' => ['nullable', 'image', 'max:4096'],
             'status' => ['required', 'in:draft,published'],
             'meta_title' => ['nullable', 'string', 'max:200'],
             'meta_description' => ['nullable', 'string', 'max:300'],
@@ -75,6 +80,32 @@ class PostController extends Controller
         }
 
         return $post?->published_at ?? now();
+    }
+
+    /** Use an uploaded cover when provided, else the URL field (trimmed), else null. */
+    private function resolveCover(Request $request, ?string $url): ?string
+    {
+        if ($request->hasFile('cover_file')) {
+            return $this->storeCover($request->file('cover_file'));
+        }
+
+        $url = trim((string) $url);
+
+        return $url !== '' ? $url : null;
+    }
+
+    private function storeCover(\Illuminate\Http\UploadedFile $file): string
+    {
+        $dir = public_path('uploads/blog');
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $base = 'cover-'.Str::random(10);
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+        $file->move($dir, $base.'.'.$ext);
+
+        return asset('uploads/blog/'.$base.'.'.$ext);
     }
 
     private function uniqueSlug(string $value, ?int $ignoreId = null): string

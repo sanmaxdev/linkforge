@@ -6,7 +6,7 @@
         Back to posts
     </a>
 
-    <form method="POST" action="{{ $post->exists ? route('admin.blog.update', $post) : route('admin.blog.store') }}" class="grid gap-6 lg:grid-cols-[1fr_300px]">
+    <form method="POST" action="{{ $post->exists ? route('admin.blog.update', $post) : route('admin.blog.store') }}" enctype="multipart/form-data" class="grid gap-6 lg:grid-cols-[1fr_300px]">
         @csrf
         @if ($post->exists) @method('PUT') @endif
 
@@ -42,8 +42,14 @@
                     </select>
                 </div>
                 <div>
-                    <label class="lf-label" for="cover_image">Cover image URL</label>
-                    <input id="cover_image" name="cover_image" value="{{ old('cover_image', $post->cover_image) }}" class="lf-input" placeholder="https://…">
+                    <span class="lf-label">Cover image</span>
+                    @if ($post->cover_image)
+                        <img src="{{ \Illuminate\Support\Str::startsWith($post->cover_image, 'http') ? $post->cover_image : asset($post->cover_image) }}" alt="" class="mb-2 aspect-[16/9] w-full rounded-lg object-cover">
+                    @endif
+                    <input type="file" name="cover_file" accept="image/*" class="block w-full text-xs text-slate-500 file:mr-3 file:rounded-md file:border-0 file:bg-slate-200 file:px-3 file:py-1.5 file:text-xs file:font-medium">
+                    @error('cover_file')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    <p class="mt-2 text-xs text-slate-400">Upload an image, or paste a URL:</p>
+                    <input id="cover_image" name="cover_image" value="{{ old('cover_image', $post->cover_image) }}" class="lf-input mt-1" placeholder="https://…">
                 </div>
             </div>
             <div class="lf-card p-6 space-y-4">

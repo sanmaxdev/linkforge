@@ -24,12 +24,14 @@
         @if ($ad)
             <div class="w-full max-w-[760px] overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                 <p class="mb-2 text-[11px] font-medium uppercase tracking-wide text-slate-400">{{ __('Advertisement') }}</p>
-                @if (! empty($ad['own']))
-                    {{-- Member-supplied ad code: isolated in a sandboxed iframe so it cannot touch this domain. --}}
-                    <iframe title="{{ __('Advertisement') }}" loading="lazy"
-                            sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
-                            srcdoc="{{ '<!doctype html><meta charset=utf-8><body style=margin:0;display:flex;justify-content:center>'.$ad['code'] }}"
-                            class="mx-auto block h-[260px] w-full border-0"></iframe>
+                @if (! empty($ad['own']) && ! empty($ad['slots']))
+                    {{-- Member-supplied ad code: each slot isolated in a sandboxed iframe so it cannot touch this domain. --}}
+                    @foreach ($ad['slots'] as $slot)
+                        <iframe title="{{ __('Advertisement') }}" loading="lazy"
+                                sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
+                                srcdoc="{{ '<!doctype html><meta charset=utf-8><body style=margin:0;display:flex;justify-content:center;align-items:center>'.$slot }}"
+                                class="mx-auto mb-3 block h-[250px] w-full border-0 last:mb-0"></iframe>
+                    @endforeach
                 @elseif (! empty($ad['code']))
                     {{-- Operator ad code (admin-entered, trusted). --}}
                     <div class="flex min-h-[100px] items-center justify-center">{!! $ad['code'] !!}</div>

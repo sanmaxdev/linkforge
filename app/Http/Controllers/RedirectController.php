@@ -126,11 +126,12 @@ class RedirectController extends Controller
             return null;
         }
 
-        // Premium / ad-free: never show operator ads; show the member's own ad code if set.
+        // Premium / ad-free: never show operator ads; show the member's own ad slots if set.
         if (app(\App\Services\Billing\PlanGate::class)->allows($owner, 'ad_free')) {
-            $own = trim((string) data_get($owner->settings, 'ad_code', ''));
+            $slots = \App\Http\Controllers\MonetizationController::slotsFor($owner);
+            $slots = array_values(array_filter($slots)); // drop the form padding / empties
 
-            return $own !== '' ? ['code' => $own, 'own' => true] : null;
+            return $slots ? ['own' => true, 'slots' => $slots] : null;
         }
 
         // Free tier: the operator's ad. Count an impression after the response.
