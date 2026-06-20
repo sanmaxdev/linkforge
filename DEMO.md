@@ -26,22 +26,19 @@ Recommended layout (mirrors how CodeCanyon competitors host demos):
 
 ## 2. Turn on demo mode
 
-Add to the demo server's `.env` (the recommended way — settings are locked once
-demo mode is on):
+Demo mode is **env-only** (there is intentionally no admin toggle, so customer
+installs never expose it). Add to the demo server's `.env`:
 
 ```env
 LF_DEMO=true
 LF_DEMO_BUY_URL=https://codecanyon.net/item/your-item
 ```
 
-Then clear config cache:
+Then clear the config cache:
 
 ```bash
 php artisan config:clear
 ```
-
-(Alternatively, before enabling it, you can toggle **Admin → Settings → General →
-Demo mode** and set the buy URL there.)
 
 ## 3. Seed the demo data + schedule the reset
 

@@ -219,8 +219,8 @@ return [
 
     // Demo mode: public showcase. Destructive + config-changing actions are blocked,
     // emails are suppressed, one-click logins are shown and a "this is a demo" banner +
-    // buy CTA appear. Enable on the demo server only (LF_DEMO=true) — never on a real
-    // install. Toggleable from Admin > Settings > General before it locks settings.
+    // buy CTA appear. Env-only (no admin UI) so customer installs never expose it —
+    // set LF_DEMO=true in .env on a SEPARATE demo server only. See DEMO.md.
     'demo' => env('LF_DEMO', false),
     'demo_buy_url' => env('LF_DEMO_BUY_URL', 'https://codecanyon.net'),
 ];

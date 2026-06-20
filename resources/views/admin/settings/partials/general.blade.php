@@ -50,21 +50,6 @@
         </div>
     </div>
 
-    <div class="lf-card p-6">
-        <h3 class="mb-1 text-sm font-semibold text-slate-900">Demo mode</h3>
-        <p class="mb-4 text-xs text-slate-400">Turns this install into a public showcase: destructive/config changes are blocked, emails are suppressed, one-click logins + a buy CTA appear, and <code>php artisan demo:reset</code> (hourly cron) keeps the sample data fresh. <strong>Use only on a dedicated demo server</strong> — never your production site. Recommended: set <code>LF_DEMO=true</code> in <code>.env</code> on the demo server (since this very form is locked once demo mode is on).</p>
-        <label class="flex items-start gap-2.5 text-sm text-slate-600">
-            <input type="checkbox" name="demo_mode" value="1" @checked(($s['demo_mode'] ?? '0') === '1')
-                   class="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500/30">
-            <span>Enable demo mode<br><span class="text-xs text-slate-400">Once on, settings can only be changed via <code>.env</code> or tinker.</span></span>
-        </label>
-        <div class="mt-4">
-            <label class="lf-label" for="demo_buy_url">Buy / purchase URL</label>
-            <input id="demo_buy_url" name="demo_buy_url" value="{{ old('demo_buy_url', $s['demo_buy_url'] ?? '') }}" class="lf-input" placeholder="https://codecanyon.net/item/...">
-            <p class="mt-1 text-xs text-slate-400">Where the demo's "Buy now" CTA links to.</p>
-        </div>
-    </div>
-
     <div class="flex justify-end">
         <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700">Save general</button>
     </div>

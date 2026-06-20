@@ -2,7 +2,6 @@
 
 namespace App\Support;
 
-use App\Models\Setting;
 use Illuminate\Support\Str;
 
 /**
@@ -10,8 +9,9 @@ use Illuminate\Support\Str;
  * can use every feature, but destructive / config-changing actions are blocked,
  * emails are suppressed, one-click logins are offered, and a buy CTA is shown.
  *
- * Off by default — only the demo server enables it (LF_DEMO=true or the General
- * setting). A real customer install is never affected.
+ * Off by default and configured by env ONLY (LF_DEMO / LF_DEMO_BUY_URL) — there is
+ * deliberately no admin UI for it, so a customer install never exposes or enables
+ * it. The author sets LF_DEMO=true in .env on a separate demo server.
  */
 class Demo
 {
@@ -37,12 +37,12 @@ class Demo
 
     public static function enabled(): bool
     {
-        return (bool) config('linkforge.demo') || Setting::get('demo_mode') === '1';
+        return (bool) config('linkforge.demo');
     }
 
     public static function buyUrl(): string
     {
-        return (string) (Setting::get('demo_buy_url') ?: config('linkforge.demo_buy_url') ?: 'https://codecanyon.net');
+        return (string) (config('linkforge.demo_buy_url') ?: 'https://codecanyon.net');
     }
 
     /** Is a write to this route blocked in demo mode? */

@@ -152,7 +152,6 @@ class SettingController extends Controller
             'site_tagline' => ['nullable', 'string', 'max:200'],
             'site_description' => ['nullable', 'string', 'max:500'],
             'maintenance_message' => ['nullable', 'string', 'max:300'],
-            'demo_buy_url' => ['nullable', 'url', 'max:300'],
         ]);
 
         Setting::putMany([
@@ -163,8 +162,6 @@ class SettingController extends Controller
             'guest_shorten' => $request->boolean('guest_shorten') ? '1' : '0',
             'maintenance_mode' => $request->boolean('maintenance_mode') ? '1' : '0',
             'maintenance_message' => (string) ($data['maintenance_message'] ?? ''),
-            'demo_mode' => $request->boolean('demo_mode') ? '1' : '0',
-            'demo_buy_url' => (string) ($data['demo_buy_url'] ?? ''),
         ]);
 
         return $this->done('general', 'General settings saved.');
