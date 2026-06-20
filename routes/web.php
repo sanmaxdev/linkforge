@@ -18,6 +18,7 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\BioController;
+use App\Http\Controllers\BulkLinkController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeveloperController;
@@ -53,6 +54,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/links', [LinkController::class, 'index'])->name('links.index');
     Route::get('/links/create', [LinkController::class, 'create'])->name('links.create');
+    Route::get('/links/bulk', [BulkLinkController::class, 'create'])->name('links.bulk');
+    Route::post('/links/bulk', [BulkLinkController::class, 'store'])->middleware('throttle:10,1')->name('links.bulk.store');
+    Route::post('/links/import', [BulkLinkController::class, 'import'])->middleware('throttle:10,1')->name('links.import');
     Route::post('/links', [LinkController::class, 'store'])->middleware('throttle:30,1')->name('links.store');
     Route::get('/links/{link}/edit', [LinkController::class, 'edit'])->name('links.edit');
     Route::put('/links/{link}', [LinkController::class, 'update'])->name('links.update');

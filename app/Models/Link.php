@@ -38,6 +38,29 @@ class Link extends Model
     }
 
     /**
+     * Normalise a tag list (string or array) to lowercase, deduped slugs:
+     * max 10 tags of 30 chars each. Returns null when empty.
+     *
+     * @param  string|array<int, string>|null  $raw
+     * @return array<int, string>|null
+     */
+    public static function normalizeTags($raw): ?array
+    {
+        $parts = is_array($raw) ? $raw : preg_split('/[,\n;|]+/', (string) $raw);
+
+        $tags = collect($parts)
+            ->map(fn ($t) => trim(preg_replace('/[^a-z0-9\- ]/', '', strtolower((string) $t))))
+            ->filter()
+            ->unique()
+            ->take(10)
+            ->map(fn ($t) => substr($t, 0, 30))
+            ->values()
+            ->all();
+
+        return $tags ?: null;
+    }
+
+    /**
      * Append this link's UTM / custom query parameters to a destination URL,
      * preserving any params already on the URL (existing keys win).
      */

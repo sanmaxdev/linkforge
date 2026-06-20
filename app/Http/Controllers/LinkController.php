@@ -280,16 +280,7 @@ class LinkController extends Controller
      */
     private function parseTags(?string $raw): ?array
     {
-        $tags = collect(preg_split('/[,\n]+/', (string) $raw))
-            ->map(fn ($t) => trim(preg_replace('/[^a-z0-9\- ]/', '', strtolower($t))))
-            ->filter()
-            ->unique()
-            ->take(10)
-            ->map(fn ($t) => substr($t, 0, 30))
-            ->values()
-            ->all();
-
-        return $tags ?: null;
+        return Link::normalizeTags($raw);
     }
 
     /**
