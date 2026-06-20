@@ -15,7 +15,6 @@ class PlanController extends Controller
         'max_links' => 'Links',
         'max_clicks' => 'Tracked clicks',
         'max_domains' => 'Custom domains',
-        'max_team' => 'Team members',
         'max_qr' => 'QR codes',
         'max_bio' => 'Bio pages',
         'ai_credits' => 'AI credits / month',
@@ -27,7 +26,6 @@ class PlanController extends Controller
         'retargeting' => 'Retargeting pixels',
         'api' => 'API access',
         'deep_links' => 'Deep links',
-        'team' => 'Team / workspaces',
         'white_label' => 'White label (hide branding)',
         'ad_free' => 'Ad-free + own ad code on links',
     ];

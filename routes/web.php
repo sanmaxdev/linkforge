@@ -21,6 +21,7 @@ use App\Http\Controllers\BioController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeveloperController;
 use App\Http\Controllers\DomainController;
+use App\Http\Controllers\GuestShortenController;
 use App\Http\Controllers\Install\InstallController;
 use App\Http\Controllers\LinkController;
 use App\Http\Controllers\MonetizationController;
@@ -207,6 +208,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/settings/geo/download/chunk', [SettingController::class, 'geoDownloadChunk'])->name('settings.geo.download.chunk');
     Route::post('/settings/geo/download/finish', [SettingController::class, 'geoDownloadFinish'])->name('settings.geo.download.finish');
 });
+
+// Public: anonymous link shortening from the landing page (rate-limited).
+Route::post('/shorten', [GuestShortenController::class, 'store'])->middleware('throttle:10,1')->name('guest.shorten');
 
 // Public: switch the UI language (guest + authenticated).
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch')->where('locale', '[A-Za-z_-]+');

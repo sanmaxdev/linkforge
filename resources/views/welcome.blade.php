@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('linkforge.name') }} · {{ config('linkforge.tagline') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.theme')
@@ -99,16 +100,54 @@
                     </a>
                 </div>
 
-                {{-- URL shortener teaser bar --}}
-                <form action="{{ route('register') }}" method="GET" class="lf-rise mx-auto mt-12 flex max-w-xl items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg shadow-slate-900/5" style="animation-delay:.24s">
-                    <span class="grid h-9 w-9 shrink-0 place-items-center text-slate-400">
-                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.19 8.69a4.5 4.5 0 0 1 1.24 7.24l-4.5 4.5a4.5 4.5 0 0 1-6.36-6.36l1.75-1.76M10.81 15.31a4.5 4.5 0 0 1-1.24-7.24l4.5-4.5a4.5 4.5 0 0 1 6.36 6.36l-1.75 1.76"/></svg>
-                    </span>
-                    <input type="text" readonly value="yourbrand.co/launch" aria-label="Short link preview"
-                           class="min-w-0 flex-1 cursor-pointer bg-transparent text-sm text-slate-500 outline-none" onfocus="this.blur()">
-                    <button type="submit" class="shrink-0 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700">Shorten</button>
-                </form>
-                <p class="lf-rise mt-3 text-xs text-slate-400" style="animation-delay:.28s">Free to start. No credit card. Installs on your own cPanel host in minutes.</p>
+                @if (\App\Models\Setting::get('guest_shorten', '1') === '1')
+                    {{-- Live anonymous shortener --}}
+                    <div class="lf-rise mx-auto mt-12 max-w-xl" style="animation-delay:.24s">
+                        <form id="lf-shorten" class="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg shadow-slate-900/5">
+                            <span class="grid h-9 w-9 shrink-0 place-items-center text-slate-400">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.19 8.69a4.5 4.5 0 0 1 1.24 7.24l-4.5 4.5a4.5 4.5 0 0 1-6.36-6.36l1.75-1.76M10.81 15.31a4.5 4.5 0 0 1-1.24-7.24l4.5-4.5a4.5 4.5 0 0 1 6.36 6.36l-1.75 1.76"/></svg>
+                            </span>
+                            <input id="lf-url" name="long_url" type="url" required placeholder="Paste a long URL to shorten…"
+                                   class="min-w-0 flex-1 bg-transparent px-1 text-sm text-slate-700 outline-none placeholder:text-slate-400">
+                            <button type="submit" class="shrink-0 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-60">Shorten</button>
+                        </form>
+                        <p id="lf-shorten-error" class="mt-2 hidden text-left text-sm text-red-600"></p>
+                        <div id="lf-shorten-result" class="mt-3 hidden items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 p-2">
+                            <input id="lf-shorten-out" readonly class="min-w-0 flex-1 bg-transparent px-2 text-sm font-semibold text-brand-800 outline-none">
+                            <a id="lf-shorten-open" target="_blank" rel="noopener" class="shrink-0 rounded-lg border border-brand-300 px-3 py-2 text-xs font-semibold text-brand-700">Open</a>
+                            <button type="button" id="lf-shorten-copy" class="shrink-0 rounded-lg bg-brand-600 px-3 py-2 text-xs font-semibold text-white">Copy</button>
+                        </div>
+                        <p class="mt-3 text-xs text-slate-400"><a href="{{ route('register') }}" class="font-medium text-brand-600 hover:text-brand-700">Sign up free</a> to brand, track and manage your links.</p>
+                    </div>
+                    <script>
+                        (function () {
+                            var form = document.getElementById('lf-shorten'); if (!form) return;
+                            var url = document.getElementById('lf-url'), out = document.getElementById('lf-shorten-out'),
+                                res = document.getElementById('lf-shorten-result'), err = document.getElementById('lf-shorten-error'),
+                                open = document.getElementById('lf-shorten-open'), copy = document.getElementById('lf-shorten-copy'),
+                                btn = form.querySelector('button[type=submit]'),
+                                token = document.querySelector('meta[name=csrf-token]').content;
+                            form.addEventListener('submit', function (e) {
+                                e.preventDefault(); err.classList.add('hidden'); res.classList.add('hidden'); res.classList.remove('flex'); btn.disabled = true;
+                                fetch(@json(route('guest.shorten')), {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': token, 'X-Requested-With': 'XMLHttpRequest' },
+                                    body: JSON.stringify({ long_url: url.value }),
+                                }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+                                  .then(function (x) {
+                                      if (!x.ok) { throw new Error(x.j.error || 'Could not shorten that link.'); }
+                                      out.value = x.j.short_url; open.href = x.j.short_url; res.classList.remove('hidden'); res.classList.add('flex');
+                                  })
+                                  .catch(function (e) { err.textContent = e.message; err.classList.remove('hidden'); })
+                                  .finally(function () { btn.disabled = false; });
+                            });
+                            copy.addEventListener('click', function () { navigator.clipboard.writeText(out.value); copy.textContent = 'Copied'; setTimeout(function () { copy.textContent = 'Copy'; }, 1200); });
+                        })();
+                    </script>
+                @else
+                    <a href="{{ route('register') }}" class="lf-rise mx-auto mt-12 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700" style="animation-delay:.24s">Get started free</a>
+                    <p class="lf-rise mt-3 text-xs text-slate-400" style="animation-delay:.28s">Free to start. No credit card. Installs on your own cPanel host in minutes.</p>
+                @endif
             </div>
 
             {{-- Hero product preview --}}

@@ -29,6 +29,11 @@
                    class="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500/30">
             <span>Allow new user registrations<br><span class="text-xs text-slate-400">When off, the sign-up page redirects to login.</span></span>
         </label>
+        <label class="mt-4 flex items-start gap-2.5 text-sm text-slate-600">
+            <input type="checkbox" name="guest_shorten" value="1" @checked(($s['guest_shorten'] ?? '1') === '1')
+                   class="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500/30">
+            <span>Allow guests to shorten links on the homepage<br><span class="text-xs text-slate-400">Anonymous, rate-limited and safety-scanned. A great top-of-funnel hook.</span></span>
+        </label>
     </div>
 
     <div class="lf-card p-6">

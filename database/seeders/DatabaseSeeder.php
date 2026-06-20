@@ -29,6 +29,18 @@ class DatabaseSeeder extends Seeder
             ['user_id' => null, 'is_default' => true, 'status' => 'active']
         );
 
+        // System account that owns anonymous (guest) short links from the landing page.
+        User::firstOrCreate(
+            ['email' => 'guest@system.local'],
+            [
+                'name' => 'Guest',
+                'password' => Hash::make(\Illuminate\Support\Str::random(40)),
+                'role' => 'user',
+                'status' => 'active',
+                'plan_id' => Plan::where('slug', 'free')->value('id'),
+            ]
+        );
+
         // Admin account (change the password after first login).
         $business = Plan::where('slug', 'business')->first();
 

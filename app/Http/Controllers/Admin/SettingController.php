@@ -136,6 +136,7 @@ class SettingController extends Controller
             'site_tagline' => (string) ($data['site_tagline'] ?? ''),
             'site_description' => (string) ($data['site_description'] ?? ''),
             'allow_registration' => $request->boolean('allow_registration') ? '1' : '0',
+            'guest_shorten' => $request->boolean('guest_shorten') ? '1' : '0',
             'maintenance_mode' => $request->boolean('maintenance_mode') ? '1' : '0',
             'maintenance_message' => (string) ($data['maintenance_message'] ?? ''),
         ]);

@@ -126,7 +126,6 @@
                     ['ok' => $plan->allows('api'), 'label' => 'API access'],
                     ['ok' => $plan->allows('retargeting'), 'label' => 'Retargeting pixels'],
                     ['ok' => $plan->allows('deep_links'), 'label' => 'Deep links'],
-                    ['ok' => $plan->allows('team'), 'label' => $plan->allows('team') ? 'Team ('.($lim('max_team') ?? '∞').' seats)' : 'Team seats'],
                     ['ok' => $plan->allows('white_label'), 'label' => 'White-label branding'],
                 ];
             @endphp

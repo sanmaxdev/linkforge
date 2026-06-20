@@ -24,7 +24,6 @@ class PlanGate
             'max_domains' => $user->domains()->count(),
             'max_qr' => $user->qrCodes()->count(),
             'max_bio' => $user->bioPages()->count(),
-            'max_team' => max(1, $user->workspaces()->count()),
             default => 0,
         };
     }

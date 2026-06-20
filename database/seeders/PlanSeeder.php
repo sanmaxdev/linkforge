@@ -19,11 +19,11 @@ class PlanSeeder extends Seeder
                 'sort' => 0,
                 'limits' => [
                     'max_links' => 25, 'max_clicks' => 2000, 'max_domains' => 0,
-                    'max_team' => 1, 'max_qr' => 5, 'max_bio' => 1, 'ai_credits' => 10,
+                    'max_qr' => 5, 'max_bio' => 1, 'ai_credits' => 10,
                 ],
                 'features' => [
                     'custom_domains' => false, 'retargeting' => false, 'api' => false,
-                    'deep_links' => false, 'team' => false, 'white_label' => false, 'ad_free' => false,
+                    'deep_links' => false, 'white_label' => false, 'ad_free' => false,
                 ],
             ],
             [
@@ -34,11 +34,11 @@ class PlanSeeder extends Seeder
                 'sort' => 1,
                 'limits' => [
                     'max_links' => 1000, 'max_clicks' => 50000, 'max_domains' => 1,
-                    'max_team' => 1, 'max_qr' => 50, 'max_bio' => 3, 'ai_credits' => 150,
+                    'max_qr' => 50, 'max_bio' => 3, 'ai_credits' => 150,
                 ],
                 'features' => [
                     'custom_domains' => true, 'retargeting' => false, 'api' => true,
-                    'deep_links' => false, 'team' => false, 'white_label' => false, 'ad_free' => true,
+                    'deep_links' => false, 'white_label' => false, 'ad_free' => true,
                 ],
             ],
             [
@@ -49,11 +49,11 @@ class PlanSeeder extends Seeder
                 'sort' => 2,
                 'limits' => [
                     'max_links' => 10000, 'max_clicks' => 500000, 'max_domains' => 5,
-                    'max_team' => 3, 'max_qr' => 1000, 'max_bio' => 25, 'ai_credits' => 1500,
+                    'max_qr' => 1000, 'max_bio' => 25, 'ai_credits' => 1500,
                 ],
                 'features' => [
                     'custom_domains' => true, 'retargeting' => true, 'api' => true,
-                    'deep_links' => true, 'team' => true, 'white_label' => false, 'ad_free' => true,
+                    'deep_links' => true, 'white_label' => false, 'ad_free' => true,
                 ],
             ],
             [
@@ -64,11 +64,11 @@ class PlanSeeder extends Seeder
                 'sort' => 3,
                 'limits' => [
                     'max_links' => null, 'max_clicks' => null, 'max_domains' => 25,
-                    'max_team' => 15, 'max_qr' => null, 'max_bio' => null, 'ai_credits' => 15000,
+                    'max_qr' => null, 'max_bio' => null, 'ai_credits' => 15000,
                 ],
                 'features' => [
                     'custom_domains' => true, 'retargeting' => true, 'api' => true,
-                    'deep_links' => true, 'team' => true, 'white_label' => true, 'ad_free' => true,
+                    'deep_links' => true, 'white_label' => true, 'ad_free' => true,
                 ],
             ],
         ];
