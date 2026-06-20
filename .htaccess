@@ -1,23 +1,28 @@
-# LinkForge — root safety net.
+# LinkForge — run from the project root WITHOUT changing the document root.
 #
-# The CORRECT setup points your domain's document root at the `public/` folder
-# (see INSTALL-CPANEL.md). This file only matters if the document root was left at
-# the project root by mistake: it then routes all requests into public/ AND blocks
-# direct access to sensitive files, so .env / config / vendor are never web-served.
+# The most secure setup still points your domain's document root at the public/ folder.
+# But if you extract LinkForge straight into your domain (or subdomain) folder and leave
+# the document root as-is, this file makes it work: real assets are served from public/,
+# every other request is handed to public/index.php, and the app source / .env are never
+# web-served. See INSTALL-CPANEL.md.
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Never serve these directly, even if the doc root is the project root.
-    RewriteRule ^(\.env(\..*)?|composer\.(json|lock)|package(-lock)?\.json|artisan|.*\.(md|sh|ps1))$ - [F,L]
+    # 1. Block direct web access to source, config and secrets.
+    RewriteRule ^(\.env|\.git|composer\.(json|lock)|package(-lock)?\.json|artisan|.*\.(md|sh|ps1))$ - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L]
 
-    # Send everything else into the application's public/ front controller.
-    RewriteCond %{REQUEST_URI} !^/public/
-    RewriteRule ^(.*)$ public/$1 [L]
+    # 2. Serve real files that live under public/ (build assets, uploads, robots, favicon).
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f
+    RewriteRule ^ public%{REQUEST_URI} [L]
+
+    # 3. Hand everything else to Laravel's front controller in public/.
+    RewriteRule ^ public/index.php [L]
 </IfModule>
 
 # Fallback denials if mod_rewrite is unavailable (Apache 2.4 syntax).
-<FilesMatch "(?i)(^\.env|\.env\..+|^composer\.(json|lock)$|^package(-lock)?\.json$|^artisan$|\.(sh|ps1)$)">
+<FilesMatch "(?i)(^\.env|\.env\..+|^composer\.(json|lock)$|^package(-lock)?\.json$|^artisan$|\.(sh|ps1|md)$)">
     Require all denied
 </FilesMatch>
 
