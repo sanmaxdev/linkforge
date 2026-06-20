@@ -37,6 +37,25 @@ class Link extends Model
         return $this->belongsTo(Campaign::class);
     }
 
+    /** Whether this link has any mobile deep-link target configured. */
+    public function hasDeepLinks(): bool
+    {
+        return (bool) (data_get($this->meta, 'deep_link.ios') || data_get($this->meta, 'deep_link.android'));
+    }
+
+    /** The app deep-link URI for a given OS ("iOS"/"Android"), or null. */
+    public function deepLinkFor(?string $os): ?string
+    {
+        $key = ['iOS' => 'ios', 'Android' => 'android'][$os] ?? null;
+        if (! $key) {
+            return null;
+        }
+
+        $uri = trim((string) data_get($this->meta, "deep_link.{$key}", ''));
+
+        return $uri !== '' ? $uri : null;
+    }
+
     /**
      * Normalise a tag list (string or array) to lowercase, deduped slugs:
      * max 10 tags of 30 chars each. Returns null when empty.

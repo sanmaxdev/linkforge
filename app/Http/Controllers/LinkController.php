@@ -67,6 +67,7 @@ class LinkController extends Controller
             'pixels' => $user->pixels()->get(),
             'attachedPixelIds' => [],
             'campaigns' => $user->campaigns()->orderBy('name')->get(),
+            'canDeepLink' => app(PlanGate::class)->allows($user, 'deep_links'),
             'aiEnabled' => app(ClaudeClient::class)->enabled(),
         ]);
     }
@@ -101,6 +102,7 @@ class LinkController extends Controller
             'params' => $this->buildParams($data),
             'title' => $data['title'] ?? null,
             'tags' => $this->parseTags($data['tags'] ?? null),
+            'meta' => $this->buildMeta($request, $user, null),
             'type' => $data['type'] ?? 'direct',
             'password' => ! empty($data['password']) ? Hash::make($data['password']) : null,
             'expires_at' => $data['expires_at'] ?? null,
@@ -141,6 +143,7 @@ class LinkController extends Controller
             'pixels' => $request->user()->pixels()->get(),
             'attachedPixelIds' => $link->pixels()->pluck('pixels.id')->all(),
             'campaigns' => $request->user()->campaigns()->orderBy('name')->get(),
+            'canDeepLink' => app(PlanGate::class)->allows($request->user(), 'deep_links'),
             'aiEnabled' => app(ClaudeClient::class)->enabled(),
         ]);
     }
@@ -175,6 +178,7 @@ class LinkController extends Controller
             'params' => $this->buildParams($data),
             'title' => $data['title'] ?? null,
             'tags' => $this->parseTags($data['tags'] ?? null),
+            'meta' => $this->buildMeta($request, $request->user(), $link),
             'type' => $data['type'] ?? 'direct',
             'expires_at' => $data['expires_at'] ?? null,
             'click_limit' => $data['click_limit'] ?? null,
@@ -241,6 +245,8 @@ class LinkController extends Controller
             'title' => ['nullable', 'string', 'max:255'],
             'tags' => ['nullable', 'string', 'max:300'],
             'campaign_id' => ['nullable', 'integer'],
+            'deep_link_ios' => ['nullable', 'string', 'max:2048'],
+            'deep_link_android' => ['nullable', 'string', 'max:2048'],
             'type' => ['nullable', 'in:direct,frame,splash,overlay,cta'],
             'expires_at' => ['nullable', 'date'],
             'password' => ['nullable', 'string', 'max:100'],
@@ -281,6 +287,32 @@ class LinkController extends Controller
     private function parseTags(?string $raw): ?array
     {
         return Link::normalizeTags($raw);
+    }
+
+    /**
+     * Build the link's meta JSON. Mobile deep links are a paid feature; the inputs
+     * are ignored (and existing meta preserved) when the plan doesn't include them.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function buildMeta(Request $request, User $user, ?Link $link): ?array
+    {
+        $meta = $link?->meta ?? [];
+
+        if (app(PlanGate::class)->allows($user, 'deep_links')) {
+            $deep = array_filter([
+                'ios' => trim((string) $request->input('deep_link_ios', '')),
+                'android' => trim((string) $request->input('deep_link_android', '')),
+            ]);
+
+            if ($deep) {
+                $meta['deep_link'] = $deep;
+            } else {
+                unset($meta['deep_link']);
+            }
+        }
+
+        return $meta ?: null;
     }
 
     /**

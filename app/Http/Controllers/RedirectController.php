@@ -96,6 +96,15 @@ class RedirectController extends Controller
         // page to fire on, so even a "direct" link must pass through the splash to track.
         $pixels = $link->relationLoaded('pixels') ? $link->pixels : $link->pixels()->get();
 
+        // Mobile deep link (Pro feature): try to open the native app, with a web fallback.
+        if ($appUrl = $this->resolveDeepLink($link, $routeCtx['os'])) {
+            return response()->view('redirect.deeplink', [
+                'target' => $target,
+                'appUrl' => $appUrl,
+                'pixels' => $pixels,
+            ]);
+        }
+
         $ad = $this->resolveAd($link);
         if ($link->type !== 'direct' || $pixels->isNotEmpty() || $ad) {
             return response()->view('redirect.splash', [
@@ -107,6 +116,25 @@ class RedirectController extends Controller
         }
 
         return redirect()->away($target, 302);
+    }
+
+    /**
+     * The app deep-link URI to attempt for this visitor, or null. Only fires on
+     * iOS/Android, when the link has a target for that OS, and the owner's plan
+     * includes deep links.
+     */
+    private function resolveDeepLink(Link $link, ?string $os): ?string
+    {
+        if (! in_array($os, ['iOS', 'Android'], true) || ! $link->hasDeepLinks()) {
+            return null;
+        }
+
+        $owner = $link->relationLoaded('user') ? $link->user : $link->user()->first();
+        if (! $owner || ! app(\App\Services\Billing\PlanGate::class)->allows($owner, 'deep_links')) {
+            return null;
+        }
+
+        return $link->deepLinkFor($os);
     }
 
     /**

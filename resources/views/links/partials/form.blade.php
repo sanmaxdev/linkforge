@@ -138,6 +138,23 @@
         </div>
     </div>
 
+    @if (! empty($canDeepLink))
+        <details class="rounded-xl border border-slate-200 bg-slate-50/60 p-4" @if($link && $link->hasDeepLinks()) open @endif>
+            <summary class="cursor-pointer text-sm font-medium text-slate-700 [&::-webkit-details-marker]:hidden">Mobile deep links</summary>
+            <p class="mt-2 text-xs text-slate-400">Open a native app on mobile instead of the browser. Enter the app's URI scheme; visitors without the app fall through to your destination URL.</p>
+            <div class="mt-3 grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label class="lf-label" for="deep_link_ios">iOS app URL</label>
+                    <input id="deep_link_ios" name="deep_link_ios" value="{{ old('deep_link_ios', data_get($link?->meta, 'deep_link.ios', '')) }}" class="lf-input" placeholder="myapp://path">
+                </div>
+                <div>
+                    <label class="lf-label" for="deep_link_android">Android app URL</label>
+                    <input id="deep_link_android" name="deep_link_android" value="{{ old('deep_link_android', data_get($link?->meta, 'deep_link.android', '')) }}" class="lf-input" placeholder="myapp://path or intent://…">
+                </div>
+            </div>
+        </details>
+    @endif
+
     <details class="rounded-xl border border-slate-200 bg-slate-50/60 p-4" @if($link && ($link->password || $link->expires_at || $link->click_limit)) open @endif>
         <summary class="cursor-pointer text-sm font-medium text-slate-700 [&::-webkit-details-marker]:hidden">Advanced options</summary>
         <div class="mt-4 grid gap-4 sm:grid-cols-2">
