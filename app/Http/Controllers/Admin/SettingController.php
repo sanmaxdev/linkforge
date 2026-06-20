@@ -316,17 +316,51 @@ class SettingController extends Controller
     {
         $data = $request->validate([
             'seo_meta_description' => ['nullable', 'string', 'max:300'],
+            'seo_og_title' => ['nullable', 'string', 'max:120'],
+            'seo_og_description' => ['nullable', 'string', 'max:300'],
+            'seo_twitter_handle' => ['nullable', 'string', 'max:40', 'regex:/^@?[A-Za-z0-9_]*$/'],
             'seo_ga_id' => ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9\-]*$/'],
             'seo_gtm_id' => ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9\-]*$/'],
+            'seo_og_image_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
         ]);
 
-        Setting::putMany([
+        $handle = trim((string) ($data['seo_twitter_handle'] ?? ''));
+
+        $out = [
             'seo_meta_description' => (string) ($data['seo_meta_description'] ?? ''),
+            'seo_og_title' => (string) ($data['seo_og_title'] ?? ''),
+            'seo_og_description' => (string) ($data['seo_og_description'] ?? ''),
+            'seo_twitter_handle' => $handle !== '' ? '@'.ltrim($handle, '@') : '',
             'seo_ga_id' => (string) ($data['seo_ga_id'] ?? ''),
             'seo_gtm_id' => (string) ($data['seo_gtm_id'] ?? ''),
-        ]);
+        ];
+
+        if ($request->hasFile('seo_og_image_file')) {
+            $out['seo_og_image'] = $this->storeSocialImage($request->file('seo_og_image_file'));
+        } elseif ($request->boolean('seo_og_image_clear')) {
+            $out['seo_og_image'] = '';
+        }
+
+        Setting::putMany($out);
 
         return $this->done('seo', 'SEO settings saved.');
+    }
+
+    /** Store an uploaded social/OG image as-is (no downscale) and return its public URL. */
+    private function storeSocialImage(\Illuminate\Http\UploadedFile $file): string
+    {
+        $dir = public_path('uploads/branding');
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $ext = strtolower((string) $file->guessExtension());
+        if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
+            $ext = 'png';
+        }
+        $name = 'og-'.\Illuminate\Support\Str::random(10).'.'.$ext;
+        $file->move($dir, $name);
+
+        return asset('uploads/branding/'.$name);
     }
 
     private function saveDomains(Request $request)

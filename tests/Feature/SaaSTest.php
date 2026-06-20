@@ -563,6 +563,40 @@ class SaaSTest extends TestCase
         $this->get('/')->assertSee('G-TEST123', false)->assertSee('googletagmanager.com/gtag/js', false);
     }
 
+    public function test_seo_og_meta_renders_on_public_pages(): void
+    {
+        Setting::putMany([
+            'seo_meta_description' => 'Meta desc here',
+            'seo_og_title' => 'Share Title Here',
+            'seo_og_description' => 'Share desc here',
+            'seo_og_image' => 'https://cdn.example.com/og.png',
+            'seo_twitter_handle' => '@mybrand',
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('<meta name="description" content="Meta desc here">', false)
+            ->assertSee('<meta property="og:title" content="Share Title Here">', false)
+            ->assertSee('<meta property="og:description" content="Share desc here">', false)
+            ->assertSee('<meta property="og:image" content="https://cdn.example.com/og.png">', false)
+            ->assertSee('content="summary_large_image"', false)
+            ->assertSee('<meta name="twitter:site" content="@mybrand">', false);
+    }
+
+    public function test_admin_saves_og_settings_and_normalizes_handle(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'section' => 'seo',
+            'seo_og_title' => 'Hello',
+            'seo_twitter_handle' => 'brandx',
+        ])->assertRedirect(route('admin.settings', ['tab' => 'seo']));
+
+        $this->assertSame('Hello', Setting::get('seo_og_title'));
+        $this->assertSame('@brandx', Setting::get('seo_twitter_handle')); // @ is added automatically
+    }
+
     // Billing & revenue ------------------------------------------------------
 
     public function test_admin_billing_requires_admin(): void
