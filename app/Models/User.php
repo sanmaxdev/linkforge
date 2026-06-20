@@ -174,13 +174,19 @@ class User extends Authenticatable implements PasskeyUser
             ->first();
     }
 
-    /** The user's current plan, falling back to the default free plan. */
+    private ?Plan $resolvedPlan = null;
+
+    /** The user's current plan, falling back to the default free plan. Memoized per request. */
     public function currentPlan(): ?Plan
     {
+        if ($this->resolvedPlan) {
+            return $this->resolvedPlan;
+        }
+
         $plan = $this->relationLoaded('plan')
             ? $this->plan
             : ($this->plan_id ? Plan::find($this->plan_id) : null);
 
-        return $plan ?: Plan::where('slug', 'free')->first();
+        return $this->resolvedPlan = ($plan ?: Plan::where('slug', 'free')->first());
     }
 }

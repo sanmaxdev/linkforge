@@ -1,0 +1,24 @@
+# LinkForge — root safety net.
+#
+# The CORRECT setup points your domain's document root at the `public/` folder
+# (see INSTALL-CPANEL.md). This file only matters if the document root was left at
+# the project root by mistake: it then routes all requests into public/ AND blocks
+# direct access to sensitive files, so .env / config / vendor are never web-served.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Never serve these directly, even if the doc root is the project root.
+    RewriteRule ^(\.env(\..*)?|composer\.(json|lock)|package(-lock)?\.json|artisan|.*\.(md|sh|ps1))$ - [F,L]
+
+    # Send everything else into the application's public/ front controller.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Fallback denials if mod_rewrite is unavailable (Apache 2.4 syntax).
+<FilesMatch "(?i)(^\.env|\.env\..+|^composer\.(json|lock)$|^package(-lock)?\.json$|^artisan$|\.(sh|ps1)$)">
+    Require all denied
+</FilesMatch>
+
+Options -Indexes

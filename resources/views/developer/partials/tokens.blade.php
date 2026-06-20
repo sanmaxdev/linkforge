@@ -1,6 +1,6 @@
 @if (session('plain_token'))
     <div class="mb-6 rounded-xl border border-brand-200 bg-brand-50 p-4">
-        <p class="text-sm font-medium text-brand-800">Copy your new token now — it won't be shown again.</p>
+        <p class="text-sm font-medium text-brand-800">Copy your new token now. It will not be shown again.</p>
         <div class="mt-2 flex items-center gap-2">
             <code class="flex-1 truncate rounded-lg border border-brand-200 bg-white px-3 py-2 font-mono text-xs text-slate-700">{{ session('plain_token') }}</code>
             <button type="button" data-copy="{{ session('plain_token') }}" class="rounded-lg border border-brand-300 bg-white px-3 py-2 text-xs font-medium text-brand-700 hover:bg-brand-100">Copy</button>

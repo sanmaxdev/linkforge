@@ -58,10 +58,16 @@ class RedirectController extends Controller
         }
 
         // Smart routing: geo / device / os / language / time targeting + weighted rotation.
-        $cfCountry = $request->headers->get('CF-IPCountry');
+        // Cloudflare visitor headers are only trusted when the operator has confirmed the
+        // site sits behind Cloudflare (Admin > Settings > Geo). Otherwise any client could
+        // spoof CF-IPCountry to defeat geo-targeting and poison analytics, so we ignore them
+        // and resolve geo from the bundled database against the real connecting IP.
+        $cf = Setting::get('geo_cf_headers') === '1';
+        $cfCountry = $cf ? $request->headers->get('CF-IPCountry') : null;
+        $ip = $cf ? ($request->headers->get('CF-Connecting-IP') ?: $request->ip()) : $request->ip();
         $parsed = UaParser::parse($request->userAgent());
         $routeCtx = [
-            'country' => app(GeoResolver::class)->country($request->ip(), $cfCountry),
+            'country' => app(GeoResolver::class)->country($ip, $cfCountry),
             'device' => $parsed['device'],
             'os' => $parsed['os'],
             'language' => $request->getPreferredLanguage() ? substr((string) $request->getPreferredLanguage(), 0, 5) : null,
@@ -75,10 +81,10 @@ class RedirectController extends Controller
             'alias' => $link->alias,
             'short_url' => $request->url(),
             'target' => $target,
-            'ip' => $request->ip(),
+            'ip' => $ip,
             'cf_country' => $cfCountry,
-            'cf_city' => $request->headers->get('CF-IPCity'),
-            'cf_region' => $request->headers->get('CF-Region'),
+            'cf_city' => $cf ? $request->headers->get('CF-IPCity') : null,
+            'cf_region' => $cf ? $request->headers->get('CF-Region') : null,
             'ua' => $request->userAgent(),
             'referer' => $request->headers->get('referer'),
             'language' => substr((string) $request->getPreferredLanguage(), 0, 10) ?: null,
@@ -197,7 +203,9 @@ class RedirectController extends Controller
         return Cache::remember(
             Link::cacheKey($domainId, $alias),
             300,
-            fn () => Link::with(['rules', 'pixels'])->where('domain_id', $domainId)->where('alias', $alias)->first()
+            // Eager-load the owner + plan so monetization's resolveAd() reads them from the
+            // warmed cache payload instead of querying users + plans on every redirect.
+            fn () => Link::with(['rules', 'pixels', 'user.plan'])->where('domain_id', $domainId)->where('alias', $alias)->first()
         );
     }
 }

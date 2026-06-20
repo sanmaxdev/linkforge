@@ -44,7 +44,12 @@ class RollupClicks extends Command
     /** Recompute one link's full daily aggregate from raw clicks (idempotent). */
     private function rollupDay(int $linkId, string $day): void
     {
-        $base = DB::table('clicks')->where('link_id', $linkId)->whereDate('created_at', $day);
+        // Half-open range instead of whereDate() so the (link_id, created_at) index is used
+        // (DATE(created_at) would wrap the column and force a scan).
+        $start = $day.' 00:00:00';
+        $end = \Illuminate\Support\Carbon::parse($day)->addDay()->format('Y-m-d').' 00:00:00';
+        $base = DB::table('clicks')->where('link_id', $linkId)
+            ->where('created_at', '>=', $start)->where('created_at', '<', $end);
 
         $agg = (clone $base)
             ->selectRaw('COUNT(*) c, COUNT(DISTINCT ip_hash) u, COALESCE(SUM(is_bot), 0) b')

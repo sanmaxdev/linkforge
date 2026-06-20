@@ -354,6 +354,7 @@ class SettingController extends Controller
         $out = [
             'geoip_provider' => $data['geoip_provider'],
             'geoip_edition' => $data['geoip_edition'],
+            'geo_cf_headers' => $request->boolean('geo_cf_headers') ? '1' : '0',
         ];
         $this->applySecret($out, $request, 'geoip_maxmind_key');
         Setting::putMany($out);

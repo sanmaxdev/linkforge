@@ -166,6 +166,7 @@ class RoutingAndSafetyTest extends TestCase
 
     public function test_redirect_geo_targets_using_cloudflare_header(): void
     {
+        \App\Models\Setting::put('geo_cf_headers', '1'); // operator confirmed they are behind Cloudflare
         $link = $this->makeLink(['alias' => 'geo', 'long_url' => 'https://global.example.com']);
         $link->rules()->create(['type' => 'geo', 'match_value' => ['values' => ['DE']], 'target_url' => 'https://de.example.com', 'sort' => 0]);
 
@@ -173,12 +174,34 @@ class RoutingAndSafetyTest extends TestCase
         $this->withHeaders(['CF-IPCountry' => 'US'])->get('/geo')->assertRedirect('https://global.example.com');
     }
 
-    public function test_click_records_country_from_cloudflare_header(): void
+    public function test_click_records_country_from_cloudflare_header_when_enabled(): void
     {
+        \App\Models\Setting::put('geo_cf_headers', '1');
         $link = $this->makeLink(['alias' => 'cc']);
 
         $this->withHeaders(['CF-IPCountry' => 'FR'])->get('/cc');
 
         $this->assertDatabaseHas('clicks', ['link_id' => $link->id, 'country' => 'FR']);
+    }
+
+    public function test_cloudflare_geo_header_is_ignored_by_default(): void
+    {
+        // Default (toggle off): a spoofed CF-IPCountry must NOT drive geo routing.
+        $link = $this->makeLink(['alias' => 'geo2', 'long_url' => 'https://global.example.com']);
+        $link->rules()->create(['type' => 'geo', 'match_value' => ['values' => ['DE']], 'target_url' => 'https://de.example.com', 'sort' => 0]);
+
+        $this->withHeaders(['CF-IPCountry' => 'DE'])->get('/geo2')->assertRedirect('https://global.example.com');
+    }
+
+    public function test_password_unlock_is_rate_limited(): void
+    {
+        $link = $this->makeLink(['alias' => 'locked', 'password' => \Illuminate\Support\Facades\Hash::make('secret')]);
+
+        $status = null;
+        for ($i = 0; $i < 12; $i++) {
+            $status = $this->post('/unlock/locked', ['password' => 'wrong'])->getStatusCode();
+        }
+
+        $this->assertSame(429, $status); // throttle:10,1 kicks in
     }
 }

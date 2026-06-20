@@ -152,8 +152,18 @@
         </div>
     </div>
 
+    <div class="lf-card p-6">
+        <h3 class="mb-1 text-sm font-semibold text-slate-900">Cloudflare</h3>
+        <label class="flex items-start gap-2.5 text-sm text-slate-600">
+            <input type="checkbox" name="geo_cf_headers" value="1" @checked(($s['geo_cf_headers'] ?? '0') === '1')
+                   class="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500/30">
+            <span>This site is behind Cloudflare &mdash; use its visitor-location headers for country/city.<br>
+                <span class="text-xs text-slate-400">Leave OFF unless you are actually behind Cloudflare. When off, geo comes from the database above using the real visitor IP. Turning it on without Cloudflare (or without locking your origin to Cloudflare) lets visitors spoof their country.</span></span>
+        </label>
+    </div>
+
     <div class="lf-card border border-slate-200 bg-slate-50 p-5 text-xs text-slate-500">
-        IP geolocation by <a href="https://db-ip.com" target="_blank" rel="noopener" class="font-medium text-brand-600 hover:text-brand-700">DB-IP</a> (CC-BY). No database at all? Put your site behind Cloudflare and country + city come from its visitor headers automatically.
+        IP geolocation by <a href="https://db-ip.com" target="_blank" rel="noopener" class="font-medium text-brand-600 hover:text-brand-700">DB-IP</a> (CC-BY 4.0).
     </div>
 
     <div class="flex justify-end">

@@ -125,6 +125,7 @@ class Installer
             ['label' => 'storage/framework/', 'path' => storage_path('framework')],
             ['label' => 'storage/logs/', 'path' => storage_path('logs')],
             ['label' => 'bootstrap/cache/', 'path' => base_path('bootstrap/cache')],
+            ['label' => 'public/uploads/', 'path' => is_dir(public_path('uploads')) ? public_path('uploads') : public_path()],
         ];
 
         return array_map(fn ($p) => [

@@ -14,7 +14,7 @@
         <ul class="mt-2 space-y-1.5">
             <li class="flex gap-2"><span class="text-brand-600">1.</span> Add a cron job: <code class="rounded bg-white px-1.5 py-0.5 font-mono text-xs">* * * * * php {{ base_path('artisan') }} schedule:run</code></li>
             <li class="flex gap-2"><span class="text-brand-600">2.</span> Configure mail, billing and branding under <span class="font-medium">Admin &rarr; Settings</span>.</li>
-            <li class="flex gap-2"><span class="text-brand-600">3.</span> For security, you may delete the <span class="font-mono text-xs">/install</span> step — it's already sealed automatically.</li>
+            <li class="flex gap-2"><span class="text-brand-600">3.</span> For security, you may delete the <span class="font-mono text-xs">/install</span> step. It is already sealed automatically.</li>
         </ul>
     </div>
 </x-install-layout>

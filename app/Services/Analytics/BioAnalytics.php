@@ -16,7 +16,10 @@ class BioAnalytics
     public function record(int $pageId, ?int $blockId, string $type, Request $request): void
     {
         $parsed = UaParser::parse($request->userAgent());
-        $ip = $request->ip();
+        // Only trust Cloudflare headers when the operator confirmed they are behind CF.
+        $cf = \App\Models\Setting::get('geo_cf_headers') === '1';
+        $ip = $cf ? ($request->header('CF-Connecting-IP') ?: $request->ip()) : $request->ip();
+        $cfCountry = $cf ? $request->header('CF-IPCountry') : null;
         $referer = $request->headers->get('referer');
 
         DB::table('bio_events')->insert([
@@ -24,7 +27,7 @@ class BioAnalytics
             'block_id' => $blockId,
             'type' => $type,
             'ip_hash' => $ip ? hash('sha256', $ip.config('app.key')) : null,
-            'country' => app(GeoResolver::class)->country($ip, $request->header('CF-IPCountry')),
+            'country' => app(GeoResolver::class)->country($ip, $cfCountry),
             'device' => $parsed['device'],
             'browser' => $parsed['browser'],
             'referer_host' => $referer ? parse_url($referer, PHP_URL_HOST) : null,

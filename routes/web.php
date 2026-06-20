@@ -218,6 +218,7 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->
 // Public: unlock a password-protected link.
 Route::post('/unlock/{alias}', [RedirectController::class, 'unlock'])
     ->where('alias', '[A-Za-z0-9\-_]+')
+    ->middleware('throttle:10,1')
     ->name('link.unlock');
 
 // Public: report an abusive link.

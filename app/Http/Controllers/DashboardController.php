@@ -32,10 +32,14 @@ class DashboardController extends Controller
         $prev7 = $this->svc->totals($scope, $to->copy()->subDays(13), $to->copy()->subDays(7))['clicks'];
         $delta = $prev7 > 0 ? (int) round(($last7 - $prev7) / $prev7 * 100) : ($last7 > 0 ? null : 0);
 
+        $linkAgg = $user->links()
+            ->selectRaw('COUNT(*) total, COALESCE(SUM(is_active), 0) active, COALESCE(SUM(clicks), 0) clicks')
+            ->first();
+
         $stats = [
-            'total_links' => $user->links()->count(),
-            'active_links' => $user->links()->where('is_active', true)->count(),
-            'total_clicks' => (int) $user->links()->sum('clicks'),
+            'total_links' => (int) $linkAgg->total,
+            'active_links' => (int) $linkAgg->active,
+            'total_clicks' => (int) $linkAgg->clicks,
             'qr_scans' => (int) $user->qrCodes()->sum('scans'),
             'clicks_30d' => $window['clicks'],
             'uniques_30d' => $window['uniques'],

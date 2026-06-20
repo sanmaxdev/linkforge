@@ -122,7 +122,12 @@ class AdvertisementController extends Controller
         if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        $name = 'ad-'.Str::random(10).'.'.strtolower($file->getClientOriginalExtension());
+        // Derive the extension from the file's content, not the client-supplied name.
+        $ext = strtolower((string) $file->guessExtension());
+        if (! in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+            $ext = 'png';
+        }
+        $name = 'ad-'.Str::random(10).'.'.$ext;
         $file->move($dir, $name);
 
         return 'uploads/ads/'.$name;
