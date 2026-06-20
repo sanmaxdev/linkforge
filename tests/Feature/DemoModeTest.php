@@ -84,6 +84,52 @@ class DemoModeTest extends TestCase
         $this->assertSame($before + 1, $user->links()->count());
     }
 
+    public function test_one_click_login_self_seeds_when_accounts_missing(): void
+    {
+        $this->enableDemo();
+        // The hourly demo:reset hasn't run yet — accounts don't exist.
+        $this->assertDatabaseMissing('users', ['email' => Demo::ADMIN_EMAIL]);
+
+        $this->get('/demo/login/admin')->assertRedirect(route('admin.dashboard'));
+
+        $this->assertDatabaseHas('users', ['email' => Demo::ADMIN_EMAIL]);
+        $this->assertSame(Demo::ADMIN_EMAIL, auth()->user()->email);
+    }
+
+    public function test_demo_blocks_config_and_destructive_actions(): void
+    {
+        $this->artisan('demo:reset', ['--force' => true]);
+        $this->enableDemo();
+        $user = User::where('email', Demo::USER_EMAIL)->firstOrFail();
+        $admin = User::where('email', Demo::ADMIN_EMAIL)->firstOrFail();
+
+        // Add a custom domain — blocked.
+        $this->actingAs($user)->post(route('domains.store'), ['host' => 'evil.example.com']);
+        $this->assertDatabaseMissing('domains', ['host' => 'evil.example.com']);
+
+        // Create an API token — blocked.
+        $this->actingAs($user)->post(route('tokens.store'), ['name' => 'demo-token']);
+        $this->assertSame(0, $user->apiKeys()->count());
+
+        // Delete own account — blocked.
+        $this->actingAs($user)->delete(route('account.destroy'), ['password' => 'whatever']);
+        $this->assertDatabaseHas('users', ['email' => Demo::USER_EMAIL]);
+
+        // Admin deleting a user — blocked.
+        $this->actingAs($admin)->delete(route('admin.users.destroy', $user));
+        $this->assertDatabaseHas('users', ['id' => $user->id]);
+    }
+
+    public function test_demo_marks_sensitive_pages_read_only(): void
+    {
+        $this->artisan('demo:reset', ['--force' => true]);
+        $this->enableDemo();
+        $user = User::where('email', Demo::USER_EMAIL)->firstOrFail();
+
+        $this->actingAs($user)->get(route('domains.index'))->assertSee('disabled in the live demo', false);
+        $this->actingAs($user)->get(route('developer.index'))->assertSee('disabled in the live demo', false);
+    }
+
     public function test_demo_blocks_registration(): void
     {
         $this->enableDemo();

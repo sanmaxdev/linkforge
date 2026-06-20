@@ -30,9 +30,15 @@ class Demo
         'admin.updates',       // the in-app updater
         'admin.languages',     // language file editing
         'admin.users.update', 'admin.users.destroy', // don't mutate/delete accounts
+        'admin.moderation',    // don't let demo admins delete other users' content
         'account.password', 'account.profile', 'account.destroy', // keep demo logins stable
         'register',            // one-click logins are the entry point; no account sprawl
         'password.email', 'password.update', // password reset (no real mail in demo)
+        // Config / security actions — visible to explore, but not changeable in the demo:
+        'domains',             // add / verify / delete custom domains
+        'tokens',              // API tokens
+        'webhooks',            // webhook endpoints (also avoids outbound abuse from the demo)
+        'billing.subscribe',   // no plan changes (keeps the demo user on the showcase plan)
     ];
 
     public static function enabled(): bool

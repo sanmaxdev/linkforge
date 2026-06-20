@@ -1,6 +1,8 @@
 <x-app-layout :title="__('Custom domains')">
     <x-slot:header>{{ __('Custom domains') }}</x-slot:header>
 
+    <x-demo-lock>Adding, verifying or removing custom domains is disabled in the live demo.</x-demo-lock>
+
     @if (session('status'))
         <div class="mb-5 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700">{{ session('status') }}</div>
     @endif

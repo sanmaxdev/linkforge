@@ -1,6 +1,8 @@
 <x-admin-layout title="Users">
     <x-slot:header>Users</x-slot:header>
 
+    <x-demo-lock>Editing, suspending or deleting accounts is disabled in the live demo.</x-demo-lock>
+
     @if (session('status'))<div class="mb-5 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700">{{ session('status') }}</div>@endif
 
     {{-- Filters --}}

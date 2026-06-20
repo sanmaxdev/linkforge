@@ -1,6 +1,8 @@
 <x-app-layout title="Developer">
     <x-slot:header>{{ __('Developer') }}</x-slot:header>
 
+    <x-demo-lock>Creating API tokens and webhooks is disabled in the live demo.</x-demo-lock>
+
     @if (session('status'))
         <div class="mb-5 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700">{{ session('status') }}</div>
     @endif
