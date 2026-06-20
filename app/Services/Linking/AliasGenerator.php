@@ -10,6 +10,18 @@ class AliasGenerator
     /** Base62 minus visually ambiguous characters (0/O, 1/l/I). */
     private const ALPHABET = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
+    /**
+     * First-party top-level paths a short link must never claim, so an alias can
+     * never shadow a real route. "docs" is the important one (it serves the
+     * documentation); the rest mirror the app's own route prefixes.
+     */
+    private const BASELINE_RESERVED = [
+        'docs', 'admin', 'api', 'app', 'dashboard', 'login', 'logout', 'register',
+        'password', 'install', 'blog', 'help', 'report', 'billing', 'account', 'b',
+        'ref', 'shorten', 'unlock', 'auth', 'links', 'campaigns', 'qr', 'bio',
+        'pixels', 'domains', 'developer', 'monetization', 'affiliate', 'demo',
+    ];
+
     /** Generate a unique random alias for the given domain. */
     public function generate(int $domainId, int $length = 6): string
     {
@@ -46,8 +58,9 @@ class AliasGenerator
     {
         $raw = Setting::get('reserved_aliases');
         $list = $raw ? json_decode($raw, true) : [];
+        $list = is_array($list) ? $list : [];
 
-        return is_array($list) ? array_map('strtolower', $list) : [];
+        return array_map('strtolower', array_merge(self::BASELINE_RESERVED, $list));
     }
 
     /**

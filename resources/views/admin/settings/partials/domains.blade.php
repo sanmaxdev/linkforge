@@ -58,5 +58,5 @@
         </div>
     @endisset
 
-    <p class="mt-4 text-xs text-slate-500">Full step-by-step for every scenario (main domain vs subdomain installs, VPS, cPanel, SSL) is in the <a href="{{ parse_url(url('docs/'), PHP_URL_PATH) }}#cfg-domains" target="_blank" rel="noopener" class="font-medium text-brand-600 hover:underline">documentation</a> under Configuration &rarr; Custom domains.</p>
+    <p class="mt-4 text-xs text-slate-500">Full step-by-step for every scenario (main domain vs subdomain installs, VPS, cPanel, SSL) is in the <a href="{{ parse_url(url('docs/index.html'), PHP_URL_PATH) }}#cfg-domains" target="_blank" rel="noopener" class="font-medium text-brand-600 hover:underline">documentation</a> under Configuration &rarr; Custom domains.</p>
 </div>

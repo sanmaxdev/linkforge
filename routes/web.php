@@ -34,6 +34,7 @@ use App\Http\Controllers\MonetizationController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\PixelController;
 use App\Http\Controllers\QrController;
+use App\Http\Controllers\DocsController;
 use App\Http\Controllers\RedirectController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\WebhookController;
@@ -292,6 +293,12 @@ Route::post('/b/{slug}/contact', [BioController::class, 'contact'])->where('slug
 
 // Payment gateway webhooks / IPN (unauthenticated; CSRF-exempt — see bootstrap/app.php).
 Route::post('/billing/webhook/{gateway}', [BillingController::class, 'webhook'])->where('gateway', '[a-z]+')->name('billing.webhook');
+
+// Public: the bundled documentation at /docs. Served through Laravel so it also
+// works on a root-.htaccess install (where the /docs *directory* request is handed
+// to the front controller). MUST be registered before the short-link fallback so a
+// link can never shadow it - this is what stops /docs being resolved as an alias.
+Route::get('/docs/{path?}', [DocsController::class, 'serve'])->where('path', '.*')->name('docs');
 
 /*
  | Short-link resolver. Registered as the fallback so every named/static route

@@ -70,9 +70,10 @@
             <div class="min-w-0 flex-1">
                 @isset($header)<h1 class="truncate text-lg font-semibold text-slate-900">{{ $header }}</h1>@endisset
             </div>
-            {{-- Root-relative (host stripped) so the browser resolves it against the real origin,
-                 immune to a stale APP_URL / proxy Host that would otherwise send url() to the wrong domain. --}}
-            <a href="{{ parse_url(url('docs/'), PHP_URL_PATH) }}" target="_blank" rel="noopener"
+            {{-- Link to the index FILE (not the /docs directory) and root-relative (host stripped):
+                 the file is served statically on every install layout and the browser resolves it
+                 against the real origin, immune to a stale APP_URL / proxy Host or a "docs" short link. --}}
+            <a href="{{ parse_url(url('docs/index.html'), PHP_URL_PATH) }}" target="_blank" rel="noopener"
                class="flex h-9 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
                title="Documentation (opens in a new tab)">
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5z"/></svg>
