@@ -110,7 +110,7 @@
           <a href="#admin-tickets">Support tickets</a>
           <a href="#admin-ads">Advertisements</a>
           <a href="#admin-affiliate">Affiliate management</a>
-          <a href="#admin-cms">Blog &amp; Help Center</a>
+          <a href="#admin-cms">Blog, Help &amp; Pages</a>
           <a href="#admin-audit">Audit log</a>
         </div>
       </div>
@@ -490,7 +490,7 @@ sudo chmod -R 775 storage bootstrap/cache</code></pre></div>
         <div class="tablewrap"><table>
           <thead><tr><th>Tab</th><th>What you set</th></tr></thead>
           <tbody>
-            <tr><td><a href="#cfg-general">General</a></td><td>Site name, registrations, guest shortening, maintenance mode.</td></tr>
+            <tr><td><a href="#cfg-general">General</a></td><td>Site name, localization, registrations &amp; default plan, announcement banner, cookie consent, maintenance mode &amp; tools.</td></tr>
             <tr><td><a href="#cfg-appearance">Appearance</a></td><td>Logo, favicon, color theme, font, default light/dark scheme, custom CSS/head code and footer.</td></tr>
             <tr><td><a href="#cfg-social">Social login</a></td><td>Google / GitHub / Facebook sign-in.</td></tr>
             <tr><td><a href="#cfg-safety">Safety</a></td><td>Blocklists, threat feeds, Turnstile CAPTCHA.</td></tr>
@@ -514,9 +514,20 @@ sudo chmod -R 775 storage bootstrap/cache</code></pre></div>
         <h2 class="sec"><a class="anchor-h" href="#cfg-general">General &amp; access</a></h2>
         <ul>
           <li><strong>Site name, tagline &amp; description</strong> - used across the marketing page, emails and as your default SEO text.</li>
+          <li><strong>Localization</strong> - set your <strong>timezone</strong> (all dates and times display in it) and the <strong>date format</strong> used across the app.</li>
           <li><strong>Allow new registrations</strong> - turn customer sign-ups on or off. Turn this off if LinkForge is just for you or your team.</li>
           <li><strong>Allow guests to shorten</strong> - lets anonymous visitors shorten a link straight from your homepage (a great lead magnet for a SaaS).</li>
-          <li><strong>Maintenance mode</strong> - show a friendly notice and pause public access while you make changes. Admins can still sign in.</li>
+          <li><strong>Registration controls</strong> - choose the <strong>default plan</strong> new accounts start on, and block sign-ups from specific <strong>email domains</strong> (one per line).</li>
+          <li><strong>Announcement banner</strong> - show a dismissible message across the public site and customer dashboard (info, warning or success style). Editing the text re-shows it to everyone.</li>
+          <li><strong>Cookie consent</strong> - show a dismissible cookie notice to visitors, in your own wording.</li>
+          <li><strong>Maintenance mode</strong> - show a friendly notice and pause public access while you make changes. Admins, short links and bio pages keep working.</li>
+        </ul>
+        <h3>Maintenance tools</h3>
+        <p>Run common upkeep tasks from this tab without shell access, handy while the cron job is still being set up:</p>
+        <ul>
+          <li><strong>Clear caches</strong> - clears the config, route, view and application caches (use this if something looks stale after a settings change).</li>
+          <li><strong>Run analytics rollup</strong> - processes new clicks into the reports immediately.</li>
+          <li><strong>Process queued jobs</strong> - sends any pending emails and webhooks now.</li>
         </ul>
       </section>
 
@@ -552,11 +563,13 @@ sudo chmod -R 775 storage bootstrap/cache</code></pre></div>
             <tr><td>From address / name</td><td><code>hello@yourbrand.com</code> · <code>YourBrand</code></td></tr>
           </tbody>
         </table></div>
-        <h3>Notification templates</h3>
-        <p>Lower on the same tab you can enable/disable each transactional email (welcome, password reset, payment receipt, and more) and edit its <strong>subject and body</strong>. Templates support placeholders like <code>{{ name }}</code> that are filled in automatically.</p>
+        <h3>Send a test email</h3>
+        <p>After saving your SMTP settings, click <strong>Send test email</strong> on this tab to send a message to your own address and confirm delivery works, without having to trigger a real password reset.</p>
+        <h3>Notification templates &amp; staff alerts</h3>
+        <p>Lower on the same tab you can enable/disable each automated email and edit its <strong>subject and body</strong>. Templates support placeholders like <code>{{ name }}</code> that are filled in automatically. These cover <strong>customer</strong> emails (welcome, password reset, ticket replies, billing receipts) and <strong>staff alerts</strong> to your team when a new customer signs up, opens a support ticket, or reports a link for abuse.</p>
         <div class="callout callout--tip">
           <span class="callout__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
-          <div>Always send yourself a test after configuring SMTP. If mail doesn't arrive, double-check the port/encryption pairing (587↔tls, 465↔ssl) and that your <em>From address</em> is on a domain your provider is allowed to send for (SPF/DKIM).</div>
+          <div>If mail doesn't arrive, double-check the port/encryption pairing (587↔tls, 465↔ssl) and that your <em>From address</em> is on a domain your provider is allowed to send for (SPF/DKIM).</div>
         </div>
       </section>
 
@@ -694,6 +707,7 @@ sudo chmod -R 775 storage bootstrap/cache</code></pre></div>
           <li><strong>X / Twitter handle</strong> - attributes shared cards to your account.</li>
           <li><strong>Google Analytics &amp; Tag Manager IDs</strong> - paste a <code>G-XXXXXXXXXX</code> or <code>GTM-XXXXXXX</code> ID to add your own tracking to the public pages.</li>
         </ul>
+        <p>LinkForge also generates an XML <strong>sitemap</strong> at <code>/sitemap.xml</code> (covering your marketing, blog, help and published <a href="#admin-cms">pages</a>) and serves a dynamic <code>/robots.txt</code> that points crawlers to it while keeping the admin and API areas out of the index. Both are automatic, with no setup needed.</p>
       </section>
 
       <section class="block" id="cfg-affiliate">
@@ -963,9 +977,12 @@ sudo chmod -R 775 storage bootstrap/cache</code></pre></div>
         <ul>
           <li><strong>Edit</strong> their details, change plan, or <strong>suspend</strong> / delete the account.</li>
           <li><strong>Impersonate</strong> - sign in <em>as</em> that user to see exactly what they see (a banner lets you leave impersonation). Great for support.</li>
-          <li><strong>Send a password-reset link</strong> by email.</li>
+          <li><strong>Send a password-reset link</strong>, or <strong>email the user directly</strong> from their detail page.</li>
           <li><strong>Export</strong> the user list as CSV.</li>
         </ul>
+        <p><strong>Bulk actions:</strong> tick several users in the list and activate, suspend or delete them in one step (admins and your own account are always protected).</p>
+        <h3>Broadcast email</h3>
+        <p><strong>Admin → Broadcast</strong> sends a one-off email to <strong>all users</strong> or to everyone on a chosen plan. Messages are queued and delivered as the cron-driven queue drains, so even a large list never blocks.</p>
         <figure id="shot-admin-users"><div class="shot"><span class="shot__tag">📷 Screenshot <span class="shot__num">17</span></span><div class="shot__cap">Admin → Users - searchable list with per-user actions.</div></div></figure>
       </section>
 
@@ -1006,12 +1023,17 @@ sudo chmod -R 775 storage bootstrap/cache</code></pre></div>
       </section>
 
       <section class="block" id="admin-cms">
-        <h2 class="sec"><a class="anchor-h" href="#admin-cms">Blog &amp; Help Center</a></h2>
-        <p>LinkForge includes two lightweight content tools to power your marketing and self-serve support:</p>
+        <h2 class="sec"><a class="anchor-h" href="#admin-cms">Blog, Help &amp; Pages</a></h2>
+        <p>LinkForge includes three lightweight content tools to power your marketing, self-serve support and the legal pages every site needs:</p>
         <ul>
           <li><strong>Blog</strong> (<strong>Admin → Blog</strong>) - write posts with a cover image, slug and draft/published status; they appear at <code>/blog</code>.</li>
           <li><strong>Help Center</strong> (<strong>Admin → Help</strong>) - write help articles grouped by category; they appear at <code>/help</code> for customers to search.</li>
+          <li><strong>Pages</strong> (<strong>Admin → Pages</strong>) - editable Markdown pages rendered at <code>/page/&lt;slug&gt;</code>. Your install ships ready-to-edit <strong>Terms of Service</strong>, <strong>Privacy Policy</strong> and <strong>Contact</strong> pages, already linked in the footer. Create your own custom pages too, and tick <em>Show in footer</em> to link any of them.</li>
         </ul>
+        <div class="callout callout--note">
+          <span class="callout__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+          <div>The shipped Terms and Privacy pages are a starting point. Review and adapt them with your own legal counsel before launch.</div>
+        </div>
       </section>
 
       <section class="block" id="admin-audit">

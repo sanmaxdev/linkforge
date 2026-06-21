@@ -117,11 +117,10 @@ class DemoModeTest extends TestCase
             $this->actingAs($admin)->get(route('admin.settings', ['tab' => $tab]))->assertOk();
         }
 
-        // The forms are read-only (disabled fieldset) and the real document root is
-        // masked to a placeholder, never the server's actual path.
+        // The forms are read-only (disabled fieldset) and the server's real path is
+        // never exposed.
         $res = $this->actingAs($admin)->get(route('admin.settings', ['tab' => 'domains']));
         $res->assertSee('<fieldset disabled', false);
-        $res->assertSee('/home/your-account', false);
         $res->assertDontSee(public_path(), false);
     }
 

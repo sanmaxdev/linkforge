@@ -1,9 +1,12 @@
 <x-admin-layout title="Pages">
     <x-slot:header>Pages</x-slot:header>
 
-    <div class="mb-5 flex items-center justify-between gap-3">
+    <div class="mb-5 flex items-center justify-between gap-4">
         <p class="text-sm text-slate-500">Editable site pages (Terms, Privacy, Contact, or any custom page), rendered at <code class="rounded bg-slate-100 px-1 text-[11px]">/page/&lt;slug&gt;</code>.</p>
-        <a href="{{ route('admin.pages.create') }}" class="lf-btn shrink-0">New page</a>
+        <a href="{{ route('admin.pages.create') }}" class="inline-flex shrink-0 items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            New page
+        </a>
     </div>
 
     @if (session('status'))<div class="mb-5 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700">{{ session('status') }}</div>@endif

@@ -76,10 +76,10 @@ class SaaSTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $pro = User::factory()->create(['plan_id' => Plan::where('slug', 'pro')->value('id')]);
 
-        // Admin Domains tab renders with the operator-only infra guidance, including
-        // the document root the operator points alias/addon domains at.
+        // Admin Domains tab renders with the CNAME-target field (the server-path
+        // infra notice was removed; the server's real path is never shown here).
         $this->actingAs($admin)->get(route('admin.settings', ['tab' => 'domains']))
-            ->assertOk()->assertSee('CNAME target')->assertSee('documentation')->assertSee(public_path());
+            ->assertOk()->assertSee('CNAME target')->assertDontSee(public_path());
 
         // Operator sets the CNAME target; customers are then told to use it.
         $this->actingAs($admin)->put(route('admin.settings.update'), [

@@ -34,29 +34,3 @@
         </div>
     </div>
 </form>
-
-{{-- Operator infrastructure guidance (owner-only) --}}
-<div class="lf-card mt-6 border border-amber-200 bg-amber-50/60 p-6">
-    <h3 class="text-sm font-semibold text-slate-900">Making customer domains actually serve</h3>
-    <p class="mt-1.5 text-xs text-slate-500">DNS alone is not enough: your web server must answer for any domain your customers point at it. This is a one-time setup on your server, not something each customer can do. Pick the path that matches your hosting.</p>
-
-    <div class="mt-4 space-y-4 text-sm text-slate-600">
-        <div>
-            <p class="font-semibold text-slate-800">VPS / server with root access (recommended for SaaS)</p>
-            <p class="mt-1 text-xs text-slate-500">Add a catch-all virtual host so <em>any</em> hostname is served by LinkForge's <span class="font-mono">public/</span> folder. Customers then connect domains with zero work from you. Use on-demand Let's Encrypt (or a wildcard cert) for HTTPS.</p>
-        </div>
-        <div>
-            <p class="font-semibold text-slate-800">cPanel / shared hosting</p>
-            <p class="mt-1 text-xs text-slate-500">There is no true catch-all without root. Either (a) offer customers branded <span class="font-medium">subdomains of your own domain</span> via a wildcard subdomain (one-time), or (b) add each customer's domain yourself, then run AutoSSL. If LinkForge runs on your <span class="font-medium">main/primary domain</span>, add it as an <span class="font-medium">Alias</span> (it shares the primary document root automatically). If LinkForge runs on a <span class="font-medium">subdomain</span>, add it as an <span class="font-medium">Addon domain</span> whose document root is the path below.</p>
-        </div>
-    </div>
-
-    @isset($docRoot)
-        <div class="mt-4 rounded-lg border border-slate-200 bg-white p-3 text-sm">
-            <span class="text-xs font-medium text-slate-400">This install's document root (point alias / addon domains here)</span>
-            <p class="mt-1 font-mono break-all text-slate-700">{{ $docRoot }}</p>
-        </div>
-    @endisset
-
-    <p class="mt-4 text-xs text-slate-500">Full step-by-step for every scenario (main domain vs subdomain installs, VPS, cPanel, SSL) is in the <a href="{{ parse_url(url('docs/index.html'), PHP_URL_PATH) }}#cfg-domains" target="_blank" rel="noopener" class="font-medium text-brand-600 hover:underline">documentation</a> under Configuration &rarr; Custom domains.</p>
-</div>

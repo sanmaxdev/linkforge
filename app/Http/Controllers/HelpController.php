@@ -8,9 +8,17 @@ class HelpController extends Controller
 {
     public function index()
     {
-        return view('help.index', [
-            'groups' => HelpArticle::published()->orderBy('sort')->orderBy('title')->get()->groupBy('category'),
-        ]);
+        // Deliberate topic order (most-used first); unlisted categories fall to the end.
+        $order = [
+            'Getting started', 'Short links', 'QR codes', 'Bio pages', 'Custom domains',
+            'Analytics', 'Marketing', 'Developers & API', 'Account & security', 'Billing & plans',
+        ];
+
+        $groups = HelpArticle::published()->orderBy('sort')->orderBy('title')->get()
+            ->groupBy('category')
+            ->sortBy(fn ($articles, $category) => ($i = array_search($category, $order, true)) === false ? 999 : $i);
+
+        return view('help.index', ['groups' => $groups]);
     }
 
     public function show(string $slug)
