@@ -10,9 +10,9 @@ class LicenseController extends Controller
 {
     public function show(LicenseService $license)
     {
+        // Note: the relay URL is author infrastructure and is deliberately NOT exposed to buyers.
         return view('admin.license.index', [
             'license' => $license->status(),
-            'relayUrl' => $license->relayUrl(),
         ]);
     }
 

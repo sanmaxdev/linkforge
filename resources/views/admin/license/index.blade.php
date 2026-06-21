@@ -42,7 +42,6 @@
 
             <dl class="mt-5 grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
                 <div><dt class="text-slate-400">Purchase code</dt><dd class="font-mono text-slate-700">{{ $mask }}</dd></div>
-                <div><dt class="text-slate-400">License server</dt><dd class="truncate text-slate-700">{{ $relayUrl ?: 'not configured' }}</dd></div>
                 <div><dt class="text-slate-400">Last verified</dt><dd class="text-slate-700">{{ $license['verified_at'] ? \Illuminate\Support\Carbon::parse($license['verified_at'])->diffForHumans() : '—' }}</dd></div>
                 <div><dt class="text-slate-400">Last checked</dt><dd class="text-slate-700">{{ $license['checked_at'] ? \Illuminate\Support\Carbon::parse($license['checked_at'])->diffForHumans() : '—' }}</dd></div>
             </dl>

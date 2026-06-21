@@ -132,10 +132,14 @@ class LicenseServiceTest extends TestCase
         $this->assertTrue(app(LicenseService::class)->hasProblem());
     }
 
-    public function test_admin_license_page_requires_admin(): void
+    public function test_admin_license_page_requires_admin_and_hides_the_relay_url(): void
     {
         $this->actingAs(User::factory()->create())->get(route('admin.license'))->assertForbidden();
-        $this->actingAs(User::factory()->create(['role' => 'admin']))
-            ->withoutVite()->get(route('admin.license'))->assertOk()->assertSee('License status');
+
+        $res = $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->withoutVite()->get(route('admin.license'));
+        $res->assertOk()->assertSee('License status');
+        // The license server is author infrastructure — it must never be shown to buyers.
+        $res->assertDontSee('relay.test');
     }
 }
