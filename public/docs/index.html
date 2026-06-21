@@ -238,7 +238,7 @@
           <div class="card"><div class="card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 21v.01M17 21h.01M21 17h.01"/></svg></div><h4>QR Code studio</h4><p>Styled, scannable QR codes for links, Wi-Fi, vCards and more - with logos, colors and saved templates.</p></div>
           <div class="card"><div class="card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div><h4>Link-in-bio pages</h4><p>Mobile-first profile pages with link blocks, themes, lead capture, vCard download and gates.</p></div>
           <div class="card"><div class="card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 3-3 3 3 5-5"/></svg></div><h4>Deep analytics</h4><p>Clicks over time, country &amp; city map, devices, browsers, referrers - with CSV export.</p></div>
-          <div class="card"><div class="card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.8L18.7 9l-4.8 1.9L12 15.7 10.1 10.9 5.3 9l4.8-1.2z"/></svg></div><h4>AI assistant <span class="badge badge--optional">optional</span></h4><p>Suggests link aliases and answers plain-English questions about your traffic. Powered by Claude or any OpenRouter model.</p></div>
+          <div class="card"><div class="card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.8L18.7 9l-4.8 1.9L12 15.7 10.1 10.9 5.3 9l4.8-1.2z"/></svg></div><h4>AI assistant <span class="badge badge--optional">optional</span></h4><p>Suggests link aliases, writes titles and bio copy, answers plain-English questions about your traffic, and summarises a link's performance. Powered by any OpenRouter model or Claude.</p></div>
           <div class="card"><div class="card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h4>Safety scanning</h4><p>Blocklists, disposable-email blocking, Cloudflare Turnstile, URLhaus, VirusTotal and Google Web Risk.</p></div>
         </div>
 
@@ -639,7 +639,7 @@ sudo chmod -R 775 storage bootstrap/cache</code></pre></div>
 
       <section class="block" id="cfg-ai">
         <h2 class="sec"><a class="anchor-h" href="#cfg-ai">AI assistant <span class="badge badge--optional">optional</span></a></h2>
-        <p>LinkForge's AI features - <a href="#use-ai">alias suggestions and "ask your links"</a> - are completely optional. With <strong>no API key set, every AI surface is hidden</strong> and the app behaves exactly as before. You (the operator) own the AI spend, so you choose the provider and model.</p>
+        <p>LinkForge's <a href="#use-ai">AI features</a> - alias and title suggestions, "ask your links", per-link summaries, bio copy and the weekly insight - are completely optional. With <strong>no API key set, every AI surface is hidden</strong> and the app behaves exactly as before. You (the operator) own the AI spend, so you choose the provider and model.</p>
         <h3>Choose a provider</h3>
         <p>By default LinkForge uses <strong>OpenRouter on a cheap, fast model</strong> (<code>openai/gpt-4o-mini</code>), because every AI task here is simple and doesn't need a flagship model. Add one key and you're set. Configure it all on the <strong>Settings &rarr; AI</strong> tab.</p>
         <ul>
@@ -767,7 +767,7 @@ sudo chmod -R 775 storage bootstrap/cache</code></pre></div>
         <ul>
           <li><strong>Destination URL</strong> - where the link sends visitors.</li>
           <li><strong>Short link</strong> - choose a domain (if more than one is available) and an optional <strong>custom alias</strong>; leave the alias blank to auto-generate a short code. If AI is enabled, a <em>Suggest with AI</em> button proposes memorable aliases.</li>
-          <li><strong>Title &amp; tags</strong> - optional labels to keep links organized; assign a <a href="#use-campaigns">campaign</a> too.</li>
+          <li><strong>Title &amp; tags</strong> - optional labels to keep links organized; assign a <a href="#use-campaigns">campaign</a> too. If AI is enabled, <em>Write title with AI</em> fills the title (and a short description) from the destination URL.</li>
         </ul>
 
         <h3>Advanced options</h3>
