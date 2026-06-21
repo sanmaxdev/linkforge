@@ -39,6 +39,15 @@ class DemoModeTest extends TestCase
         $this->assertGreaterThan(0, $user->links()->count());
         $this->assertGreaterThan(0, $user->campaigns()->count());
         $this->assertGreaterThan(0, $user->pixels()->count());
+        $this->assertGreaterThan(0, $user->qrCodes()->count());
+        $this->assertGreaterThan(0, $user->bioPages()->count());
+        $this->assertGreaterThan(0, $user->bioPages()->first()->blocks()->count());
+
+        // The seeded bio page is public at the root slug and renders without error.
+        $this->get('/'.$user->bioPages()->first()->slug)->assertOk();
+
+        // A full starter Help Center (20+ articles) is seeded.
+        $this->assertGreaterThanOrEqual(20, \App\Models\HelpArticle::where('status', 'published')->count());
 
         // Analytics history is seeded + rolled up (clicks → daily + country/city dimensions).
         $linkIds = $user->links()->pluck('id');
@@ -78,40 +87,42 @@ class DemoModeTest extends TestCase
         $this->assertNotSame('HACKED', Setting::get('site_name'));
     }
 
-    public function test_demo_allows_appearance_theme_change(): void
+    public function test_demo_blocks_every_settings_save_including_appearance_and_seo(): void
     {
         $this->artisan('demo:reset', ['--force' => true]);
         $this->enableDemo();
         $admin = User::where('email', Demo::ADMIN_EMAIL)->firstOrFail();
 
-        $preset = array_key_first(\App\Support\ThemePalette::PRESETS);
-        $font = array_values(\App\Support\ThemePalette::FONTS)[0];
+        // Appearance and SEO are no longer special - every settings save is blocked.
+        $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'section' => 'appearance', 'theme_scheme' => 'dark',
+        ])->assertRedirect();
+        $this->assertNotSame('dark', Setting::get('theme_scheme'));
 
         $this->actingAs($admin)->put(route('admin.settings.update'), [
-            'section' => 'appearance', 'theme_preset' => $preset, 'theme_font' => $font, 'theme_scheme' => 'dark',
+            'section' => 'general', 'site_name' => 'HACKED',
         ])->assertRedirect();
-
-        // Saved (not blocked): theme_scheme changed from the default.
-        $this->assertSame('dark', Setting::get('theme_scheme'));
+        $this->assertNotSame('HACKED', Setting::get('site_name'));
     }
 
-    public function test_demo_hides_secret_and_infra_settings_tabs(): void
+    public function test_demo_shows_all_settings_tabs_but_locks_them_and_masks_infra(): void
     {
         $this->artisan('demo:reset', ['--force' => true]);
         $this->enableDemo();
         $admin = User::where('email', Demo::ADMIN_EMAIL)->firstOrFail();
 
-        // Appearance stays available.
-        $this->actingAs($admin)->get(route('admin.settings', ['tab' => 'appearance']))
-            ->assertOk()->assertSee('theme_preset', false);
+        // Every tab is now visible so visitors can explore the full admin - including
+        // the ones that used to be hidden (their secret values are masked, not the tabs).
+        foreach (['general', 'login', 'billing', 'email', 'geo', 'domains', 'seo'] as $tab) {
+            $this->actingAs($admin)->get(route('admin.settings', ['tab' => $tab]))->assertOk();
+        }
 
-        // Forcing a hidden tab via ?tab= must not render its secret/infra partial.
-        $this->actingAs($admin)->get(route('admin.settings', ['tab' => 'billing']))
-            ->assertOk()->assertDontSee('Stripe', false);
-        $this->actingAs($admin)->get(route('admin.settings', ['tab' => 'domains']))
-            ->assertOk()->assertDontSee('document root', false);
-        $this->actingAs($admin)->get(route('admin.settings', ['tab' => 'email']))
-            ->assertOk()->assertDontSee('SMTP', false);
+        // The forms are read-only (disabled fieldset) and the real document root is
+        // masked to a placeholder, never the server's actual path.
+        $res = $this->actingAs($admin)->get(route('admin.settings', ['tab' => 'domains']));
+        $res->assertSee('<fieldset disabled', false);
+        $res->assertSee('/home/your-account', false);
+        $res->assertDontSee(public_path(), false);
     }
 
     public function test_demo_blocks_updater_upload(): void

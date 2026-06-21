@@ -20,16 +20,6 @@ class Demo
 
     public const USER_EMAIL = 'user@demo.test';
 
-    /** Settings sections that stay EDITABLE in demo (cosmetic, no secrets). */
-    public const SAFE_SETTINGS = ['appearance', 'seo'];
-
-    /**
-     * Settings tabs shown in demo. The hidden ones (login, safety, billing, ai,
-     * email, geo, domains) expose API keys, SMTP credentials, the server IP and
-     * the document-root path, so they're kept out of the public showcase entirely.
-     */
-    public const SETTINGS_TABS = ['general', 'appearance', 'seo', 'affiliate'];
-
     /**
      * Write actions blocked in demo mode (route-name prefixes). Everything else —
      * creating links, campaigns, pixels, QR codes, upgrading via the offline

@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\BioBlock;
+use App\Models\BioPage;
 use App\Models\Domain;
 use App\Models\HelpArticle;
 use App\Models\Plan;
@@ -94,6 +96,12 @@ class DemoReset extends Command
         $account->links()->delete();
         $account->campaigns()->delete();
         $account->pixels()->delete();
+        $account->qrCodes()->delete();
+        $bioIds = $account->bioPages()->pluck('id');
+        if ($bioIds->isNotEmpty()) {
+            BioBlock::whereIn('bio_page_id', $bioIds)->delete();
+            $account->bioPages()->delete();
+        }
 
         $spring = $account->campaigns()->create(['name' => 'Spring sale', 'color' => 'emerald']);
         $news = $account->campaigns()->create(['name' => 'Newsletter', 'color' => 'blue']);
@@ -119,6 +127,92 @@ class DemoReset extends Command
 
         $account->pixels()->create(['provider' => 'facebook', 'pixel_id' => '1234567890', 'name' => 'Meta Pixel']);
         $account->pixels()->create(['provider' => 'google', 'pixel_id' => 'G-DEMO12345', 'name' => 'GA4']);
+
+        $this->seedQrCodes($account);
+        $this->seedBioPages($account);
+    }
+
+    /** A handful of styled sample QR codes for the QR studio. */
+    private function seedQrCodes(User $account): void
+    {
+        $qrs = [
+            ['name' => 'Spring sale poster', 'type' => 'url', 'content' => 'https://example.com/spring-collection', 'scans' => 412,
+                'data' => ['url' => 'https://example.com/spring-collection'],
+                'design' => ['fg' => '#065f46', 'bg' => '#ffffff', 'dotsType' => 'rounded', 'eyeFrameType' => 'extra-rounded', 'eyeBallType' => 'dot', 'gradient' => true, 'gradStart' => '#10b981', 'gradStop' => '#0f766e', 'gradType' => 'linear', 'gradRotation' => 45, 'margin' => 2, 'ecc' => 'M']],
+            ['name' => 'Café Wi-Fi', 'type' => 'wifi', 'content' => 'WIFI:T:WPA;S:LinkForge Cafe;P:forge-guest;;', 'scans' => 138,
+                'data' => ['ssid' => 'LinkForge Cafe', 'password' => 'forge-guest', 'encryption' => 'WPA'],
+                'design' => ['fg' => '#0f172a', 'bg' => '#ffffff', 'dotsType' => 'classy', 'eyeFrameType' => 'square', 'eyeBallType' => 'square', 'gradient' => false, 'margin' => 2, 'ecc' => 'Q']],
+            ['name' => 'Digital business card', 'type' => 'vcard', 'scans' => 96,
+                'content' => "BEGIN:VCARD\nVERSION:3.0\nFN:Alex Rivera\nORG:LinkForge\nTITLE:Founder\nTEL:+1-555-0142\nEMAIL:alex@example.com\nURL:https://example.com\nEND:VCARD",
+                'data' => ['name' => 'Alex Rivera', 'org' => 'LinkForge', 'title' => 'Founder', 'phone' => '+1-555-0142', 'email' => 'alex@example.com'],
+                'design' => ['fg' => '#1e3a8a', 'bg' => '#ffffff', 'dotsType' => 'dots', 'eyeFrameType' => 'extra-rounded', 'eyeBallType' => 'dot', 'gradient' => true, 'gradStart' => '#2563eb', 'gradStop' => '#0ea5e9', 'gradType' => 'linear', 'gradRotation' => 90, 'margin' => 2, 'ecc' => 'M']],
+            ['name' => 'Product launch', 'type' => 'url', 'content' => 'https://example.com/product-launch', 'scans' => 247,
+                'data' => ['url' => 'https://example.com/product-launch'],
+                'design' => ['fg' => '#9d174d', 'bg' => '#ffffff', 'dotsType' => 'extra-rounded', 'eyeFrameType' => 'extra-rounded', 'eyeBallType' => 'dot', 'gradient' => true, 'gradStart' => '#f97316', 'gradStop' => '#ec4899', 'gradType' => 'linear', 'gradRotation' => 135, 'margin' => 2, 'ecc' => 'M']],
+        ];
+
+        foreach ($qrs as $q) {
+            $account->qrCodes()->create(array_merge(['is_dynamic' => false, 'format' => 'png'], $q));
+        }
+    }
+
+    /** Two polished bio pages (a creator profile + a shop) with sample blocks. */
+    private function seedBioPages(User $account): void
+    {
+        $admin = $account->role === 'admin';
+
+        $creator = $account->bioPages()->create([
+            'slug' => $admin ? 'nova-studio' : 'alex-rivera',
+            'title' => $admin ? 'Nova Studio' : 'Alex Rivera',
+            'is_published' => true, 'views' => $admin ? 1840 : 3120,
+            'theme' => ['headerLayout' => 'banner', 'font' => 'jakarta', 'textColor' => '#ffffff',
+                'bg' => ['type' => 'gradient', 'gradStart' => '#7c3aed', 'gradStop' => '#4f46e5', 'gradAngle' => 160],
+                'button' => ['color' => '#ffffff', 'textColor' => '#4c1d95', 'style' => 'soft', 'shape' => 'rounded', 'shadow' => 'sm', 'frosted' => true]],
+            'settings' => ['description' => $admin ? 'Design studio · branding & web' : 'Creator · tools that help you ship', 'verified' => true,
+                'avatar' => ['display' => true, 'style' => 'circle'], 'social_position' => 'top'],
+            'social_links' => [
+                ['platform' => 'instagram', 'url' => 'https://instagram.com/linkforge'],
+                ['platform' => 'x', 'url' => 'https://x.com/linkforge'],
+                ['platform' => 'youtube', 'url' => 'https://youtube.com/@linkforge'],
+            ],
+        ]);
+        $this->seedBlocks($creator, [
+            ['heading', ['text' => 'Latest links']],
+            ['link', ['label' => '🚀 New: our Spring collection', 'url' => 'https://example.com/spring-collection']],
+            ['link', ['label' => '🎧 Listen to the podcast', 'url' => 'https://example.com/podcast']],
+            ['featured', ['label' => 'Get the app', 'url' => 'https://example.com/get-the-app']],
+            ['text', ['text' => 'Thanks for stopping by — tap any link above to dive in.']],
+            ['newsletter', ['label' => 'Join the newsletter', 'text' => 'One useful email a week. No spam.', 'button' => 'Subscribe']],
+        ]);
+
+        $shop = $account->bioPages()->create([
+            'slug' => $admin ? 'forge-shop' : 'spring-shop',
+            'title' => $admin ? 'Forge Shop' : 'Spring Shop',
+            'is_published' => true, 'views' => $admin ? 640 : 980,
+            'theme' => ['headerLayout' => 'classic', 'font' => 'poppins', 'textColor' => '#ffffff',
+                'bg' => ['type' => 'gradient', 'gradStart' => '#10b981', 'gradStop' => '#0f766e', 'gradAngle' => 160],
+                'button' => ['color' => '#ffffff', 'textColor' => '#065f46', 'style' => 'soft', 'shape' => 'pill', 'shadow' => 'sm', 'frosted' => false]],
+            'settings' => ['description' => 'Fresh drops every season', 'verified' => false,
+                'avatar' => ['display' => true, 'style' => 'rounded'], 'social_position' => 'top'],
+            'social_links' => [
+                ['platform' => 'instagram', 'url' => 'https://instagram.com/linkforge'],
+                ['platform' => 'tiktok', 'url' => 'https://tiktok.com/@linkforge'],
+            ],
+        ]);
+        $this->seedBlocks($shop, [
+            ['text', ['text' => 'Shop the latest — free shipping over $50.']],
+            ['product', ['label' => 'Spring Tote Bag', 'price' => '$28', 'text' => 'Organic cotton, roomy and light.', 'url' => 'https://example.com/tote']],
+            ['product', ['label' => 'Enamel Mug', 'price' => '$16', 'text' => 'Camp-style, dishwasher safe.', 'url' => 'https://example.com/mug']],
+            ['link', ['label' => 'See the full catalogue', 'url' => 'https://example.com/shop']],
+        ]);
+    }
+
+    /** @param  array<int, array{0:string, 1:array<string,mixed>}>  $blocks */
+    private function seedBlocks(BioPage $page, array $blocks): void
+    {
+        foreach ($blocks as $i => [$type, $content]) {
+            $page->blocks()->create(['type' => $type, 'content' => $content, 'sort' => $i, 'is_active' => true]);
+        }
     }
 
     /** Insert $count synthetic click events for a link, spread over the history window. */
@@ -196,9 +290,8 @@ class DemoReset extends Command
         Post::create(['author_id' => $authorId, 'title' => 'Why you should own your URL shortener', 'slug' => 'own-your-shortener', 'status' => 'published', 'published_at' => now()->subDays(3), 'excerpt' => 'Stop renting your most important marketing asset.', 'body' => "## Own your links\n\nYour short links are infrastructure. Self-host and keep **100%** of your data.\n\n- No per-click fees\n- Custom domains\n- Unlimited links"]);
         Post::create(['author_id' => $authorId, 'title' => '5 link-marketing tips that actually work', 'slug' => 'link-marketing-tips', 'status' => 'published', 'published_at' => now()->subDay(), 'excerpt' => 'Practical tactics to get more clicks.', 'body' => "## Track everything\n\nUTM tags + pixels turn every link into a data source.\n\n## Brand your domain\n\nBranded links get more clicks."]);
 
+        // The full starter Help Center library (25+ articles), reset to a clean set.
         HelpArticle::query()->delete();
-        HelpArticle::create(['category' => 'Getting started', 'title' => 'Creating your first short link', 'slug' => 'first-short-link', 'status' => 'published', 'sort' => 1, 'excerpt' => 'Shorten a URL in three clicks.', 'body' => "## Steps\n\n1. Go to **Links → New link**\n2. Paste your URL\n3. Click **Create**"]);
-        HelpArticle::create(['category' => 'Getting started', 'title' => 'Adding a custom domain', 'slug' => 'custom-domain', 'status' => 'published', 'sort' => 2, 'excerpt' => 'Use your own branded domain.', 'body' => "## Add a domain\n\nGo to **Custom domains**, add your host and point a CNAME."]);
-        HelpArticle::create(['category' => 'Analytics', 'title' => 'Understanding your click data', 'slug' => 'click-data', 'status' => 'published', 'sort' => 1, 'excerpt' => 'Read the dashboard like a pro.', 'body' => "## Metrics\n\nClicks, unique visitors, countries, devices and referrers — in real time."]);
+        (new \Database\Seeders\HelpArticleSeeder)->run();
     }
 }

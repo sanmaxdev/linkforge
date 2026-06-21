@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LinkForge - Documentation</title>
 <meta name="description" content="Installation, configuration and usage guide for LinkForge - the premium, AI-native, self-hosted URL shortener.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../favicon.svg">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -22,11 +24,16 @@
       </span>
     </div>
 
-    <div class="sidebar__search">
-      <input type="search" id="navSearch" placeholder="Search the docs…" aria-label="Search documentation" autocomplete="off">
+    <div class="sidebar__search" id="searchWrap">
+      <input type="search" id="navSearch" placeholder="Search the docs…" aria-label="Search documentation" autocomplete="off" spellcheck="false">
+      <kbd class="sidebar__kbd">/</kbd>
+      <button type="button" class="sidebar__clear" id="navClear" aria-label="Clear search" title="Clear">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
     </div>
 
     <nav class="nav" id="nav">
+      <p class="nav__count" id="navCount"></p>
       <p class="nav__empty" id="navEmpty">No matching topics.</p>
 
       <div class="nav__group">
@@ -821,7 +828,7 @@ sudo chmod -R 775 storage bootstrap/cache</code></pre></div>
 
       <section class="block" id="use-bio">
         <h2 class="sec"><a class="anchor-h" href="#use-bio">Link-in-bio pages</a></h2>
-        <p>A <strong>bio page</strong> is a mobile-first profile page (like Linktree) hosted on your platform at <code>yoursite.com/b/their-handle</code>. From <strong>Bio Pages</strong>, users build a page by adding:</p>
+        <p>A <strong>bio page</strong> is a mobile-first profile page (like Linktree) hosted on your platform at <code>yoursite.com/their-handle</code>. From <strong>Bio Pages</strong>, users build a page by adding:</p>
         <ul>
           <li><strong>Link blocks</strong> - buttons that point to any URL, reorderable by drag.</li>
           <li><strong>Profile</strong> - avatar, name, bio text and social icons.</li>

@@ -52,13 +52,13 @@ class SettingController extends Controller
 
     public function index(Request $request)
     {
-        // In demo mode, hide tabs that expose secrets / server internals (keys, SMTP,
-        // server IP, document root). Forcing $tab to an allowed key also prevents the
-        // view from including a hidden section's partial via ?tab=.
+        // In demo mode every tab is shown so visitors can explore the whole admin;
+        // the forms are made read-only in the view and every save is blocked by
+        // DemoGuard. Secret values are masked (see SECRETS) and the infra values
+        // below (server IP, document root) are swapped for sanitised placeholders,
+        // so nothing sensitive leaks.
+        $demo = \App\Support\Demo::enabled();
         $tabs = self::TABS;
-        if (\App\Support\Demo::enabled()) {
-            $tabs = array_intersect_key($tabs, array_flip(\App\Support\Demo::SETTINGS_TABS));
-        }
         $tab = array_key_exists($request->query('tab'), $tabs) ? $request->query('tab') : array_key_first($tabs);
         $s = Setting::allCached();
 
@@ -79,8 +79,8 @@ class SettingController extends Controller
             'geoEditions' => GeoipUpdater::EDITIONS,
             'geoDetected' => $this->geoDatabasePresent(),
             'appHost' => parse_url((string) config('app.url'), PHP_URL_HOST) ?: $request->getHost(),
-            'autoServerIp' => $request->server('SERVER_ADDR'),
-            'docRoot' => public_path(),
+            'autoServerIp' => $demo ? '203.0.113.10' : $request->server('SERVER_ADDR'),
+            'docRoot' => $demo ? '/home/your-account/public_html/public' : public_path(),
         ]);
     }
 

@@ -4,10 +4,17 @@
 # But if you extract LinkForge straight into your domain (or subdomain) folder and leave
 # the document root as-is, this file makes it work: real assets are served from public/,
 # every other request is handed to public/index.php, and the app source / .env are never
-# web-served. See INSTALL-CPANEL.md.
+# web-served. See the documentation at /docs (Installation).
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # 0. Serve the bundled public icon packs (social + country-flag SVGs) that live under
+    #    public/vendor/. Without this the generic "vendor/" source block below would 403
+    #    them, so bio-page social icons and analytics flags show as broken images. Only a
+    #    real file under public/vendor/social|flags/ matches, so no source is exposed.
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f
+    RewriteRule ^vendor/(social|flags)/ public%{REQUEST_URI} [L]
 
     # 1. Block direct web access to source, config and secrets.
     RewriteRule ^(\.env|\.git|composer\.(json|lock)|package(-lock)?\.json|artisan|.*\.(md|sh|ps1))$ - [F,L]
