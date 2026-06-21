@@ -134,7 +134,9 @@ class RemoteUpdate
                 'token' => (string) ($dl['token'] ?? ''),
             ]);
             if (! $res->ok()) {
-                throw new RuntimeException('Download was refused by the server (status '.$res->status().').');
+                $serverMsg = trim((string) ($res->json('error') ?? ''));
+                throw new RuntimeException('Download was refused by the update server (status '.$res->status().')'
+                    .($serverMsg !== '' ? ': '.$serverMsg : '.'));
             }
 
             // Capped streaming write — a hostile relay cannot fill the disk past the cap.

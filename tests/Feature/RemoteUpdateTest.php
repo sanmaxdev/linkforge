@@ -217,6 +217,16 @@ class RemoteUpdateTest extends TestCase
         $this->assertSame([], $u->issues($m), 'the remote-staged package passes the same issues() gate as a manual upload');
     }
 
+    public function test_download_surfaces_the_servers_refusal_reason(): void
+    {
+        $zip = $this->makeZip(['version' => '1.1.0', 'requires' => '1.0.0', 'name' => 'X', 'notes' => '']);
+        Http::fake(['https://relay.test/update/download' => Http::response(['error' => 'Invalid or expired download token.'], 403)]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Invalid or expired download token');
+        app(RemoteUpdate::class)->downloadAndStage($this->releaseFor($zip));
+    }
+
     // --- controller routes -----------------------------------------------------
 
     public function test_remote_routes_require_admin(): void
