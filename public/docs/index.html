@@ -641,12 +641,14 @@ sudo chmod -R 775 storage bootstrap/cache</code></pre></div>
         <h2 class="sec"><a class="anchor-h" href="#cfg-ai">AI assistant <span class="badge badge--optional">optional</span></a></h2>
         <p>LinkForge's AI features - <a href="#use-ai">alias suggestions and "ask your links"</a> - are completely optional. With <strong>no API key set, every AI surface is hidden</strong> and the app behaves exactly as before. You (the operator) own the AI spend, so you choose the provider and model.</p>
         <h3>Choose a provider</h3>
+        <p>By default LinkForge uses <strong>OpenRouter on a cheap, fast model</strong> (<code>openai/gpt-4o-mini</code>), because every AI task here is simple and doesn't need a flagship model. Add one key and you're set. Configure it all on the <strong>Settings &rarr; AI</strong> tab.</p>
         <ul>
-          <li><strong>Anthropic (Claude)</strong> - paste an API key from <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> and pick a model (defaults to the most capable; switch to a smaller model to cut cost).</li>
-          <li><strong>OpenRouter</strong> - one key for many models. Paste a key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai</a> and enter a model slug (e.g. <code>anthropic/claude-opus-4</code> or <code>openai/gpt-4o</code>).</li>
+          <li><strong>OpenRouter</strong> (default, recommended) - one key works with many models. Paste a key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">openrouter.ai/keys</a> into the OpenRouter API-key field; keep the default model, or set any slug (e.g. <code>openai/gpt-4.1-mini</code>, <code>google/gemini-2.0-flash-001</code>, <code>anthropic/claude-3.5-haiku</code>).</li>
+          <li><strong>Anthropic (Claude)</strong> - native Claude. Switch the provider to "Anthropic", paste a key from <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> and pick a model.</li>
         </ul>
+        <p>With no key set for the active provider, every AI surface hides itself and the app behaves as if AI is off.</p>
         <h3>Credit costs</h3>
-        <p>Each AI action spends <strong>AI credits</strong> from the customer's monthly plan allowance (set per plan in <a href="#cfg-plans">Plans</a>). On this tab you set how many credits each action costs - alias suggestion, ask-your-links query and weekly insight. This lets you keep AI spend predictable.</p>
+        <p>Each AI action - alias suggestion, ask-your-links query and the weekly insight - spends <strong>AI credits</strong> from the customer's monthly plan allowance (set per plan in <a href="#cfg-plans">Plans</a>). On this tab you set how many credits each action costs, so AI spend stays predictable. Set the <strong>weekly-insight cost to 0</strong> to make it free for everyone (operator-funded) instead of charging a credit.</p>
       </section>
 
       <section class="block" id="cfg-safety">

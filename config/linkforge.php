@@ -22,7 +22,7 @@ return [
 
     // Shipped version. The applied version is tracked in the `app_version` setting
     // and bumped by the in-app updater; this is the floor for a fresh install.
-    'version' => '1.0.29',
+    'version' => '1.0.30',
     'tagline' => env('LF_TAGLINE', 'Forge links that work harder.'),
     'description' => env('LF_DESCRIPTION', 'A premium, AI-native link platform with branded domains, deep analytics, a QR studio and safety scanning, on hosting you own.'),
 
@@ -136,8 +136,11 @@ return [
     |
     */
     'ai' => [
-        // Active provider: "anthropic" (native Claude) or "openrouter" (any model).
-        'provider' => env('AI_PROVIDER', 'anthropic'),
+        // Active provider: "openrouter" (any model, OpenAI-compatible gateway) or
+        // "anthropic" (native Claude). Defaults to OpenRouter on a cheap, fast model
+        // because every bundled AI task (alias ideas, a tiny intent parse, a 1-3
+        // sentence narration) is simple - no need to pay flagship prices.
+        'provider' => env('AI_PROVIDER', 'openrouter'),
 
         // Anthropic native
         'key' => env('ANTHROPIC_API_KEY'),
@@ -149,7 +152,9 @@ return [
         // OpenRouter (OpenAI-compatible gateway to any model)
         'openrouter' => [
             'key' => env('OPENROUTER_API_KEY'),
-            'model' => env('OPENROUTER_MODEL', 'anthropic/claude-opus-4'),
+            // Cheap + capable default for the bundled tasks. Swap to any OpenRouter slug
+            // (openai/gpt-4.1-mini, google/gemini-2.0-flash-001, anthropic/claude-...).
+            'model' => env('OPENROUTER_MODEL', 'openai/gpt-4o-mini'),
             'base_url' => rtrim(env('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1'), '/'),
         ],
 

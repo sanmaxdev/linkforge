@@ -5,6 +5,7 @@ namespace App\Services\Ai;
 use App\Models\User;
 use App\Services\Analytics\AnalyticsService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -114,7 +115,14 @@ class NlAnalytics
             'required' => ['metric', 'dimension', 'range_days', 'top_n', 'understood'],
         ];
 
-        return $this->claude->structured($system, $question, $schema, 300);
+        // Cache the parse (the intent only, never the answer): it is a deterministic
+        // mapping of a question to a query plan, so repeated and example questions
+        // skip the model call. The narration below always runs on fresh figures.
+        return Cache::remember(
+            'ai:intent:'.sha1(mb_strtolower(trim($question))),
+            now()->addDay(),
+            fn () => $this->claude->structured($system, $question, $schema, 300),
+        );
     }
 
     /** Ask the model to phrase the computed figures as a short answer. */

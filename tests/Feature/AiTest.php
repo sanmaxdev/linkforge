@@ -32,16 +32,43 @@ class AiTest extends TestCase
 
     private function enableAi(): void
     {
-        config(['linkforge.ai.key' => 'sk-test', 'linkforge.ai.model' => 'claude-opus-4-8']);
+        // These tests exercise the feature logic over the Anthropic provider, so pin it.
+        // The default provider is now OpenRouter (see the dedicated routing test below).
+        config([
+            'linkforge.ai.provider' => 'anthropic',
+            'linkforge.ai.key' => 'sk-test',
+            'linkforge.ai.model' => 'claude-opus-4-8',
+        ]);
     }
 
     public function test_claude_client_is_disabled_without_a_key(): void
     {
-        config(['linkforge.ai.key' => null]);
+        config(['linkforge.ai.provider' => 'anthropic', 'linkforge.ai.key' => null]);
         $this->assertFalse(app(ClaudeClient::class)->enabled());
 
         config(['linkforge.ai.key' => 'sk-test']);
         $this->assertTrue(app(ClaudeClient::class)->enabled());
+    }
+
+    public function test_openrouter_is_the_default_provider_and_routes_correctly(): void
+    {
+        // Fresh config defaults to OpenRouter on a cheap model.
+        $this->assertSame('openrouter', app(ClaudeClient::class)->provider());
+        $this->assertSame('openai/gpt-4o-mini', config('linkforge.ai.openrouter.model'));
+
+        config(['linkforge.ai.openrouter.key' => 'sk-or-test']);
+        Http::fake(['openrouter.ai/*' => Http::response([
+            'choices' => [['message' => ['content' => json_encode(['aliases' => ['spring-sale', 'launch-2026']])]]],
+        ], 200)]);
+
+        $user = User::factory()->create(['ai_credits' => 5]);
+
+        $this->actingAs($user)->postJson('/ai/alias', ['long_url' => 'https://example.com/spring'])
+            ->assertOk()
+            ->assertJson(['suggestions' => ['spring-sale', 'launch-2026']]);
+
+        // The request went to OpenRouter (the cheap default), never Anthropic.
+        Http::assertSent(fn ($r) => str_contains($r->url(), 'openrouter.ai'));
     }
 
     public function test_ai_endpoints_are_unavailable_without_a_key(): void
@@ -175,11 +202,34 @@ class AiTest extends TestCase
         $insight = data_get($user->fresh()->settings, 'weekly_insight');
         $this->assertNotNull($insight);
         $this->assertSame('Clicks are up this week. Keep sharing your top link.', $insight['text']);
+        // It is metered: the insight charged one AI credit (5 -> 4).
+        $this->assertSame(4, (int) $user->fresh()->ai_credits);
+    }
+
+    public function test_weekly_insight_skips_accounts_without_credits(): void
+    {
+        $this->enableAi();
+        Http::fake();
+
+        $user = User::factory()->create(['ai_credits' => 0]);
+        $domain = Domain::query()->first();
+        $link = $user->links()->create([
+            'domain_id' => $domain->id, 'alias' => 'wk0', 'long_url' => 'https://example.com',
+            'last_click_at' => now()->subDay(),
+        ]);
+        DB::table('stat_daily')->insert([
+            'link_id' => $link->id, 'day' => now()->toDateString(), 'clicks' => 7, 'uniques' => 5, 'bots' => 0,
+        ]);
+
+        $this->artisan('ai:weekly-insights')->assertSuccessful();
+
+        $this->assertNull(data_get($user->fresh()->settings, 'weekly_insight'));
+        Http::assertNothingSent(); // no model call for an account out of credits
     }
 
     public function test_weekly_insights_command_is_a_noop_without_a_key(): void
     {
-        config(['linkforge.ai.key' => null]);
+        config(['linkforge.ai.provider' => 'anthropic', 'linkforge.ai.key' => null]);
         Http::fake();
 
         $this->artisan('ai:weekly-insights')->assertSuccessful();
