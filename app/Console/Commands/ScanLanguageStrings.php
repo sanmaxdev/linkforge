@@ -21,7 +21,7 @@ class ScanLanguageStrings extends Command
     {
         $keys = [];
 
-        $finder = (new Finder())->files()->in([resource_path('views'), app_path()])->name(['*.blade.php', '*.php']);
+        $finder = (new Finder)->files()->in([resource_path('views'), app_path()])->name(['*.blade.php', '*.php']);
         foreach ($finder as $file) {
             $code = $file->getContents();
             // __('…') / @lang('…') / trans('…') with single or double quotes.

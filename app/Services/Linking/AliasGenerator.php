@@ -66,7 +66,7 @@ class AliasGenerator
     /**
      * Validate a user-supplied custom alias.
      *
-     * @return string|null  Error message, or null if valid.
+     * @return string|null Error message, or null if valid.
      */
     public function validateCustom(string $alias, int $domainId, ?int $ignoreLinkId = null): ?string
     {

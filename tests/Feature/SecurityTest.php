@@ -103,7 +103,7 @@ class SecurityTest extends TestCase
             'slug' => 'xsstest',
             'title' => 'XSS',
             'is_published' => true,
-            'theme' => ['bg' => ['type' => 'color', 'color' => "#fff;}</style><script>alert(document.cookie)</script><style>{"]],
+            'theme' => ['bg' => ['type' => 'color', 'color' => '#fff;}</style><script>alert(document.cookie)</script><style>{']],
             'settings' => [],
             'social_links' => [],
         ]);

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Link;
 use App\Models\SafetyScan;
+use App\Models\Webhook;
 use App\Services\Safety\ThreatScanner;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -52,7 +53,7 @@ class ScanLink implements ShouldQueue
 
         // Notify subscribed webhooks the first time a link is flagged or blocked.
         if (! $wasFlagged && in_array($result['status'], $flagged, true)) {
-            \App\Models\Webhook::fire($link->user_id, 'link.flagged', [
+            Webhook::fire($link->user_id, 'link.flagged', [
                 'id' => $link->id,
                 'alias' => $link->alias,
                 'long_url' => $link->long_url,

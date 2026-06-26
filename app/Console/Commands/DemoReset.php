@@ -11,6 +11,9 @@ use App\Models\Post;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Affiliate\ReferralService;
+use App\Support\Demo;
+use Database\Seeders\HelpArticleSeeder;
+use Database\Seeders\PageSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
@@ -37,7 +40,7 @@ class DemoReset extends Command
 
     public function handle(): int
     {
-        if (! \App\Support\Demo::enabled() && ! $this->option('force')) {
+        if (! Demo::enabled() && ! $this->option('force')) {
             $this->warn('Demo mode is off; nothing to do. Use --force to seed anyway.');
 
             return self::SUCCESS;
@@ -46,11 +49,11 @@ class DemoReset extends Command
         $plan = Plan::where('slug', 'business')->first() ?? Plan::where('price', '>', 0)->orderByDesc('price')->first();
         $domainId = Domain::where('is_default', true)->value('id');
 
-        $admin = User::updateOrCreate(['email' => \App\Support\Demo::ADMIN_EMAIL], [
+        $admin = User::updateOrCreate(['email' => Demo::ADMIN_EMAIL], [
             'name' => 'Demo Admin', 'role' => 'admin', 'status' => 'active',
             'password' => Hash::make('demo-'.Str::random(24)), 'plan_id' => $plan?->id,
         ]);
-        $user = User::updateOrCreate(['email' => \App\Support\Demo::USER_EMAIL], [
+        $user = User::updateOrCreate(['email' => Demo::USER_EMAIL], [
             'name' => 'Demo User', 'role' => 'user', 'status' => 'active',
             'password' => Hash::make('demo-'.Str::random(24)), 'plan_id' => $plan?->id,
         ]);
@@ -78,7 +81,7 @@ class DemoReset extends Command
         Artisan::call('clicks:rollup');
 
         Cache::flush();
-        $this->info('Demo reset complete. Admin: '.\App\Support\Demo::ADMIN_EMAIL.' · User: '.\App\Support\Demo::USER_EMAIL);
+        $this->info('Demo reset complete. Admin: '.Demo::ADMIN_EMAIL.' · User: '.Demo::USER_EMAIL);
 
         return self::SUCCESS;
     }
@@ -292,9 +295,9 @@ class DemoReset extends Command
 
         // The full starter Help Center library (25+ articles), reset to a clean set.
         HelpArticle::query()->delete();
-        (new \Database\Seeders\HelpArticleSeeder)->run();
+        (new HelpArticleSeeder)->run();
 
         // Terms / Privacy / Contact pages (idempotent; keeps existing edits).
-        (new \Database\Seeders\PageSeeder)->run();
+        (new PageSeeder)->run();
     }
 }

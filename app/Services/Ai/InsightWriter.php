@@ -57,7 +57,7 @@ class InsightWriter
         $system = 'You write a brief weekly performance insight for a link-analytics dashboard. '
             .'Use 2 to 3 sentences. Compare this week to last week, call out the single most '
             .'notable change and the top traffic source. Be specific with numbers, plain and '
-            ."encouraging. No preamble, no markdown, no em dashes.";
+            .'encouraging. No preamble, no markdown, no em dashes.';
 
         return $this->claude->text($system, 'Figures (JSON): '.json_encode($figures), 400);
     }

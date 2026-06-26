@@ -17,7 +17,7 @@ class AliasSuggester
     ) {}
 
     /**
-     * @return list<string>  available, validated alias candidates
+     * @return list<string> available, validated alias candidates
      */
     public function suggest(string $url, ?string $title, int $domainId, int $count = 6): array
     {

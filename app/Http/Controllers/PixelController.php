@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pixel;
+use App\Services\Billing\PlanGate;
 use Illuminate\Http\Request;
 
 class PixelController extends Controller
@@ -14,7 +15,7 @@ class PixelController extends Controller
 
     public function store(Request $request)
     {
-        if (! app(\App\Services\Billing\PlanGate::class)->allows($request->user(), 'retargeting')) {
+        if (! app(PlanGate::class)->allows($request->user(), 'retargeting')) {
             return back()->with('error', 'Retargeting pixels are available on the Pro plan and above.');
         }
 

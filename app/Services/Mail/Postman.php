@@ -4,6 +4,7 @@ namespace App\Services\Mail;
 
 use App\Mail\TemplatedMail;
 use App\Models\EmailTemplate;
+use App\Support\Demo;
 use App\Support\EmailEvents;
 use Illuminate\Support\Facades\Mail;
 
@@ -22,7 +23,7 @@ class Postman
     public function send(string $event, string|array $to, array $data = []): void
     {
         // Never send real email from the public demo.
-        if (\App\Support\Demo::enabled()) {
+        if (Demo::enabled()) {
             return;
         }
 

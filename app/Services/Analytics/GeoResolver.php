@@ -3,6 +3,7 @@
 namespace App\Services\Analytics;
 
 use GeoIp2\Database\Reader;
+use GeoIp2\Model\City;
 
 /**
  * Resolves a visitor's ISO country code.
@@ -24,7 +25,7 @@ class GeoResolver
     /** Memoized City lookup for the most recent IP (one mmdb read per IP). */
     private ?string $cityIp = null;
 
-    private ?\GeoIp2\Model\City $cityRec = null;
+    private ?City $cityRec = null;
 
     public function country(?string $ip, ?string $cfCountry = null): ?string
     {
@@ -89,7 +90,7 @@ class GeoResolver
      * Look up the full City record once per IP (memoized within the request).
      * Returns null on a country-only database, a missing IP, or any failure.
      */
-    private function cityRecord(?string $ip): ?\GeoIp2\Model\City
+    private function cityRecord(?string $ip): ?City
     {
         if ($ip === $this->cityIp) {
             return $this->cityRec;

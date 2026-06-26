@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class AuditLog extends Model
 {
@@ -33,7 +34,7 @@ class AuditLog extends Model
             'action' => $action,
             'target_type' => $target ? class_basename($target) : null,
             'target_id' => $target?->getKey(),
-            'description' => $description === null ? null : \Illuminate\Support\Str::limit($description, 2000, ''),
+            'description' => $description === null ? null : Str::limit($description, 2000, ''),
             'created_at' => now(),
         ]);
     }

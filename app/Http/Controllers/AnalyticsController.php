@@ -13,6 +13,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AnalyticsController extends Controller
@@ -164,7 +165,7 @@ class AnalyticsController extends Controller
             'pageTitle' => 'Campaign analytics',
             'backUrl' => route('campaigns.index'),
             'itemTitle' => $campaign->name,
-            'itemSubtitle' => $linkIds->count().' '.\Illuminate\Support\Str::plural('link', $linkIds->count()),
+            'itemSubtitle' => $linkIds->count().' '.Str::plural('link', $linkIds->count()),
             'totalsCards' => [
                 ['label' => 'Total clicks', 'value' => $p['totals']['clicks']],
                 ['label' => 'Unique visitors', 'value' => $p['totals']['uniques']],

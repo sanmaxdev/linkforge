@@ -7,6 +7,7 @@ use App\Models\AuditLog;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Subscription;
+use App\Services\Mail\Postman;
 use Illuminate\Http\Request;
 
 class BillingController extends Controller
@@ -67,7 +68,7 @@ class BillingController extends Controller
             AuditLog::record('billing.cancel', "Canceled subscription for {$subscription->user?->email}", $subscription);
 
             if ($subscription->user) {
-                app(\App\Services\Mail\Postman::class)->send('subscription_canceled', $subscription->user->email, [
+                app(Postman::class)->send('subscription_canceled', $subscription->user->email, [
                     'name' => $subscription->user->name, 'plan_name' => $subscription->plan?->name ?? '',
                     'action_url' => route('billing.index'),
                 ]);
@@ -92,7 +93,7 @@ class BillingController extends Controller
             AuditLog::record('payment.refund', "Refunded {$payment->currency} {$payment->amount} for {$payment->user?->email}", $payment);
 
             if ($payment->user) {
-                app(\App\Services\Mail\Postman::class)->send('payment_refunded', $payment->user->email, [
+                app(Postman::class)->send('payment_refunded', $payment->user->email, [
                     'name' => $payment->user->name,
                     'amount' => $payment->currency.' '.number_format((float) $payment->amount, 2),
                 ]);

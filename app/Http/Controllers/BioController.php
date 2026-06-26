@@ -3,12 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\BioBlock;
+use App\Models\BioMessage;
 use App\Models\BioPage;
+use App\Models\BioSubscriber;
+use App\Services\Ai\ClaudeClient;
 use App\Services\Analytics\BioAnalytics;
 use App\Services\Billing\PlanGate;
 use App\Services\Linking\AliasGenerator;
+use App\Support\BioChat;
+use App\Support\BioEmbed;
+use App\Support\HtmlSanitizer;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -23,7 +31,7 @@ class BioController extends Controller
 
     public function create()
     {
-        return view('bio.edit', ['page' => null, 'aiEnabled' => app(\App\Services\Ai\ClaudeClient::class)->enabled()]);
+        return view('bio.edit', ['page' => null, 'aiEnabled' => app(ClaudeClient::class)->enabled()]);
     }
 
     public function store(Request $request)
@@ -43,7 +51,7 @@ class BioController extends Controller
     {
         abort_unless((int) $bioPage->user_id === (int) $request->user()->id, 403);
 
-        return view('bio.edit', ['page' => $bioPage->load('blocks'), 'aiEnabled' => app(\App\Services\Ai\ClaudeClient::class)->enabled()]);
+        return view('bio.edit', ['page' => $bioPage->load('blocks'), 'aiEnabled' => app(ClaudeClient::class)->enabled()]);
     }
 
     public function update(Request $request, BioPage $bioPage)
@@ -164,7 +172,7 @@ class BioController extends Controller
      *
      * @param  list<string>  $allowed
      */
-    private function storeUpload(\Illuminate\Http\UploadedFile $file, array $allowed, string $fallback): string
+    private function storeUpload(UploadedFile $file, array $allowed, string $fallback): string
     {
         $ext = strtolower((string) $file->guessExtension());
         if (! in_array($ext, $allowed, true)) {
@@ -175,7 +183,7 @@ class BioController extends Controller
         if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        $name = \Illuminate\Support\Str::random(28).'.'.$ext;
+        $name = Str::random(28).'.'.$ext;
         $file->move($dir, $name);
 
         return $name;
@@ -198,7 +206,7 @@ class BioController extends Controller
         }
         $lines[] = 'END:VCARD';
 
-        $filename = (\Illuminate\Support\Str::slug($field('label')) ?: 'contact').'.vcf';
+        $filename = (Str::slug($field('label')) ?: 'contact').'.vcf';
 
         return response(implode("\r\n", $lines), 200, [
             'Content-Type' => 'text/vcard; charset=utf-8',
@@ -236,7 +244,7 @@ class BioController extends Controller
             'name' => ['nullable', 'string', 'max:120'],
         ]);
 
-        \App\Models\BioSubscriber::firstOrCreate(
+        BioSubscriber::firstOrCreate(
             ['bio_page_id' => $page->id, 'email' => mb_strtolower($data['email'])],
             ['name' => $data['name'] ?? null, 'ip_hash' => hash('sha256', (string) $request->ip())],
         );
@@ -259,7 +267,7 @@ class BioController extends Controller
             'message' => ['required', 'string', 'max:5000'],
         ]);
 
-        \App\Models\BioMessage::create([
+        BioMessage::create([
             'bio_page_id' => $page->id,
             'name' => $data['name'] ?? null,
             'email' => $data['email'] ?? null,
@@ -370,7 +378,7 @@ class BioController extends Controller
                 array_map('trim', preg_split('/\r\n|\r|\n/', $text)),
                 fn ($u) => (bool) filter_var($u, FILTER_VALIDATE_URL),
             ));
-            $chatProvider = array_key_exists((string) ($row['provider'] ?? ''), \App\Support\BioChat::PROVIDERS) ? (string) $row['provider'] : '';
+            $chatProvider = array_key_exists((string) ($row['provider'] ?? ''), BioChat::PROVIDERS) ? (string) $row['provider'] : '';
             $chatId = preg_replace('/[^A-Za-z0-9_\/.-]/', '', (string) ($row['id'] ?? ''));
             $ppUser = preg_replace('/[^A-Za-z0-9_.-]/', '', (string) ($row['username'] ?? ''));
             $ios = trim((string) ($row['ios'] ?? ''));
@@ -385,7 +393,7 @@ class BioController extends Controller
                 'whatsapp' => $phone !== '' ? ['label' => $label !== '' ? $label : 'WhatsApp', 'phone' => $phone, 'message' => trim((string) ($row['message'] ?? ''))] : null,
                 'featured' => filter_var($url, FILTER_VALIDATE_URL) ? ['label' => $label !== '' ? $label : $url, 'url' => $url, 'image' => $image] : null,
                 // Embed accepts a URL only if a known provider can render it (see BioEmbed).
-                'embed', 'video' => filter_var($url, FILTER_VALIDATE_URL) && \App\Support\BioEmbed::resolve($url) ? ['url' => $url] : null,
+                'embed', 'video' => filter_var($url, FILTER_VALIDATE_URL) && BioEmbed::resolve($url) ? ['url' => $url] : null,
                 'map' => $query !== '' ? ['query' => $query] : null,
                 'countdown' => $date !== '' ? ['label' => $label, 'date' => $date] : null,
                 'faq' => $text !== '' ? ['label' => $label, 'text' => $text] : null,
@@ -397,7 +405,7 @@ class BioController extends Controller
                 'newsletter', 'contact' => ['label' => $label, 'text' => $text, 'button' => $button],
                 'rss' => filter_var($url, FILTER_VALIDATE_URL) ? ['label' => $label, 'url' => $url, 'count' => $count > 0 ? min($count, 20) : 5] : null,
                 'tagline' => $text !== '' ? ['text' => $text] : null,
-                'html' => ($cleanHtml = \App\Support\HtmlSanitizer::clean((string) ($row['html'] ?? ''))) !== '' ? ['html' => $cleanHtml] : null,
+                'html' => ($cleanHtml = HtmlSanitizer::clean((string) ($row['html'] ?? ''))) !== '' ? ['html' => $cleanHtml] : null,
                 'vcard' => ($label !== '' || $phone !== '' || $email !== '') ? [
                     'label' => $label, 'phone' => $phone, 'email' => $email, 'org' => $org, 'title' => $jobTitle,
                     'url' => filter_var($url, FILTER_VALIDATE_URL) ? $url : '',

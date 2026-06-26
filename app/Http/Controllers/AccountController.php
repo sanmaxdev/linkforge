@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Support\ImageResizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -83,7 +84,7 @@ class AccountController extends Controller
         $user = $request->user();
 
         // Never let the last active administrator lock everyone out of the panel.
-        if ($user->isAdmin() && \App\Models\User::where('role', 'admin')
+        if ($user->isAdmin() && User::where('role', 'admin')
             ->where('status', 'active')
             ->where('id', '!=', $user->id)
             ->doesntExist()) {

@@ -44,7 +44,7 @@ class PackageUpdate extends Command
             mkdir(dirname($out), 0755, true);
         }
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($out, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             $this->error("Could not create {$out}.");
 

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Domain;
 use App\Models\Link;
+use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -58,7 +59,7 @@ class PixelTest extends TestCase
     public function test_pixel_provider_validation_matches_the_supported_set(): void
     {
         // The create form, the controller's validation, and the render partial must agree.
-        $user = User::factory()->create(['plan_id' => \App\Models\Plan::where('slug', 'pro')->value('id')]);
+        $user = User::factory()->create(['plan_id' => Plan::where('slug', 'pro')->value('id')]);
 
         $this->actingAs($user)->post(route('pixels.store'), [
             'provider' => 'not-a-provider', 'pixel_id' => 'X',

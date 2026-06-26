@@ -6,6 +6,7 @@ use App\Models\Domain;
 use App\Models\Link;
 use App\Models\Plan;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -199,10 +200,10 @@ class LinkAndRedirectTest extends TestCase
     /** Guards against N+1 / lazy-load 500s that strict mode triggers in production. */
     public function test_pages_render_with_links_under_strict_lazy_loading(): void
     {
-        \Illuminate\Database\Eloquent\Model::preventLazyLoading(true);
+        Model::preventLazyLoading(true);
 
         try {
-            $plan = \App\Models\Plan::where('slug', 'free')->first();
+            $plan = Plan::where('slug', 'free')->first();
             $user = User::factory()->create(['plan_id' => $plan->id]);
 
             $this->actingAs($user)->post('/links', ['long_url' => 'https://example.com/a'])
@@ -211,7 +212,7 @@ class LinkAndRedirectTest extends TestCase
             $this->actingAs($user)->get('/links')->assertOk();
             $this->actingAs($user)->get('/dashboard')->assertOk();
         } finally {
-            \Illuminate\Database\Eloquent\Model::preventLazyLoading(false);
+            Model::preventLazyLoading(false);
         }
     }
 

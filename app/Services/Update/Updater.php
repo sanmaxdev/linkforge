@@ -34,7 +34,7 @@ class Updater
      */
     public function inspect(string $zipPath): array
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($zipPath) !== true) {
             throw new RuntimeException('The file is not a valid ZIP archive.');
         }
@@ -82,12 +82,12 @@ class Updater
      * Apply an update. $base lets tests target a temp directory instead of the app root.
      *
      * @param  array{version:string,name:string,notes:string}  $manifest
-     * @return list<string>  human-readable log lines
+     * @return list<string> human-readable log lines
      */
     public function apply(string $zipPath, array $manifest, ?string $base = null, ?int $userId = null): array
     {
         $base = rtrim($base ?? base_path(), '/\\');
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($zipPath) !== true) {
             throw new RuntimeException('Could not open the update archive.');
         }

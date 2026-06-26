@@ -2,14 +2,20 @@
 
 namespace Tests\Feature;
 
+use App\Models\BioMessage;
 use App\Models\BioPage;
+use App\Models\BioSubscriber;
 use App\Models\Domain;
 use App\Models\Link;
+use App\Models\Plan;
 use App\Models\User;
 use App\Services\Analytics\BioAnalytics;
+use App\Support\BioEmbed;
+use App\Support\HtmlSanitizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -239,7 +245,7 @@ class QrBioPixelTest extends TestCase
 
         // Same email (any case) does not create a second row.
         $this->post(route('bio.subscribe', 'nl'), ['email' => 'FAN@example.com']);
-        $this->assertSame(1, \App\Models\BioSubscriber::where('bio_page_id', $page->id)->count());
+        $this->assertSame(1, BioSubscriber::where('bio_page_id', $page->id)->count());
 
         // Honeypot field set => silently dropped.
         $this->post(route('bio.subscribe', 'nl'), ['email' => 'bot@example.com', 'website' => 'spam']);
@@ -261,8 +267,8 @@ class QrBioPixelTest extends TestCase
     {
         $owner = User::factory()->create();
         $page = $owner->bioPages()->create(['slug' => 'ld', 'is_published' => true]);
-        \App\Models\BioSubscriber::create(['bio_page_id' => $page->id, 'email' => 'a@example.com', 'name' => 'A']);
-        \App\Models\BioMessage::create(['bio_page_id' => $page->id, 'message' => 'a question']);
+        BioSubscriber::create(['bio_page_id' => $page->id, 'email' => 'a@example.com', 'name' => 'A']);
+        BioMessage::create(['bio_page_id' => $page->id, 'message' => 'a question']);
 
         $intruder = User::factory()->create();
         $this->actingAs($intruder)->get(route('bio.leads', $page))->assertForbidden();
@@ -278,8 +284,8 @@ class QrBioPixelTest extends TestCase
 
     public function test_bio_supports_newsletter_contact_and_rss_blocks(): void
     {
-        \Illuminate\Support\Facades\Http::fake([
-            '*' => \Illuminate\Support\Facades\Http::response(
+        Http::fake([
+            '*' => Http::response(
                 '<?xml version="1.0"?><rss version="2.0"><channel><item><title>First post</title><link>https://blog.example.com/1</link></item><item><title>Second</title><link>https://blog.example.com/2</link></item></channel></rss>',
                 200,
             ),
@@ -319,7 +325,7 @@ class QrBioPixelTest extends TestCase
     public function test_bio_html_block_is_sanitized(): void
     {
         // Direct sanitizer contract.
-        $clean = \App\Support\HtmlSanitizer::clean('<p>Hi <b>x</b><script>alert(1)</script> <a href="javascript:alert(2)">a</a> <a href="https://ok.com">b</a></p><iframe src="https://evil"></iframe>');
+        $clean = HtmlSanitizer::clean('<p>Hi <b>x</b><script>alert(1)</script> <a href="javascript:alert(2)">a</a> <a href="https://ok.com">b</a></p><iframe src="https://evil"></iframe>');
         $this->assertStringNotContainsString('<script', $clean);
         $this->assertStringNotContainsString('javascript:', $clean);
         $this->assertStringNotContainsString('<iframe', $clean);
@@ -461,12 +467,12 @@ class QrBioPixelTest extends TestCase
 
     public function test_bio_embed_resolves_known_providers_only(): void
     {
-        $this->assertSame('https://www.youtube.com/embed/dQw4w9WgXcQ', \App\Support\BioEmbed::resolve('https://youtu.be/dQw4w9WgXcQ')['src']);
-        $this->assertSame('https://player.vimeo.com/video/76979871', \App\Support\BioEmbed::resolve('https://vimeo.com/76979871')['src']);
-        $this->assertSame('https://open.spotify.com/embed/track/abc123', \App\Support\BioEmbed::resolve('https://open.spotify.com/track/abc123')['src']);
-        $this->assertStringContainsString('form.typeform.com/to/AbC123', \App\Support\BioEmbed::resolve('https://mysite.typeform.com/to/AbC123')['src']);
-        $this->assertNull(\App\Support\BioEmbed::resolve('https://example.com/whatever'));
-        $this->assertNull(\App\Support\BioEmbed::resolve(''));
+        $this->assertSame('https://www.youtube.com/embed/dQw4w9WgXcQ', BioEmbed::resolve('https://youtu.be/dQw4w9WgXcQ')['src']);
+        $this->assertSame('https://player.vimeo.com/video/76979871', BioEmbed::resolve('https://vimeo.com/76979871')['src']);
+        $this->assertSame('https://open.spotify.com/embed/track/abc123', BioEmbed::resolve('https://open.spotify.com/track/abc123')['src']);
+        $this->assertStringContainsString('form.typeform.com/to/AbC123', BioEmbed::resolve('https://mysite.typeform.com/to/AbC123')['src']);
+        $this->assertNull(BioEmbed::resolve('https://example.com/whatever'));
+        $this->assertNull(BioEmbed::resolve(''));
     }
 
     public function test_password_protected_bio_gates_then_unlocks(): void
@@ -519,7 +525,7 @@ class QrBioPixelTest extends TestCase
 
     public function test_pixel_attaches_and_fires_on_splash_link(): void
     {
-        $user = User::factory()->create(['plan_id' => \App\Models\Plan::where('slug', 'pro')->value('id')]);
+        $user = User::factory()->create(['plan_id' => Plan::where('slug', 'pro')->value('id')]);
 
         $this->actingAs($user)->post('/pixels', ['provider' => 'facebook', 'pixel_id' => '1234567890', 'name' => 'Main'])
             ->assertRedirect();

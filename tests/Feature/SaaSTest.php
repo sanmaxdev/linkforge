@@ -2,14 +2,19 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\Admin\SettingController;
 use App\Models\AbuseReport;
 use App\Models\Domain;
 use App\Models\Link;
 use App\Models\Plan;
 use App\Models\Setting;
 use App\Models\User;
+use App\Providers\SettingsServiceProvider;
+use App\Services\Billing\BillingService;
+use App\Support\ThemePalette;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class SaaSTest extends TestCase
@@ -86,7 +91,7 @@ class SaaSTest extends TestCase
             'section' => 'domains', 'custom_domain_target' => 'cname.brand.test', 'custom_domain_ip' => '203.0.113.10',
         ])->assertRedirect(route('admin.settings', ['tab' => 'domains']));
 
-        $this->assertSame('cname.brand.test', \App\Models\Setting::get('custom_domain_target'));
+        $this->assertSame('cname.brand.test', Setting::get('custom_domain_target'));
 
         $this->actingAs($pro)->get(route('domains.index'))
             ->assertOk()->assertSee('cname.brand.test')->assertSee('203.0.113.10');
@@ -417,8 +422,8 @@ class SaaSTest extends TestCase
             ->assertRedirect();
         $this->assertSame('midnight', Setting::get('theme_preset'));
 
-        (new \App\Providers\SettingsServiceProvider($this->app))->boot();
-        $this->assertSame(\App\Support\ThemePalette::COLORS['slate']['500'], config('linkforge.theme.brand.500'));
+        (new SettingsServiceProvider($this->app))->boot();
+        $this->assertSame(ThemePalette::COLORS['slate']['500'], config('linkforge.theme.brand.500'));
     }
 
     public function test_appearance_logo_upload_resizes_and_stores(): void
@@ -444,10 +449,10 @@ class SaaSTest extends TestCase
     {
         Setting::putMany(['site_name' => 'Acme Links', 'theme_preset' => 'ocean', 'theme_font' => 'Poppins']);
 
-        (new \App\Providers\SettingsServiceProvider($this->app))->boot();
+        (new SettingsServiceProvider($this->app))->boot();
 
         $this->assertSame('Acme Links', config('linkforge.name'));
-        $this->assertSame(\App\Support\ThemePalette::COLORS['blue']['500'], config('linkforge.theme.brand.500'));
+        $this->assertSame(ThemePalette::COLORS['blue']['500'], config('linkforge.theme.brand.500'));
         $this->assertSame('Poppins', config('linkforge.theme.font'));
     }
 
@@ -477,7 +482,7 @@ class SaaSTest extends TestCase
         // during maintenance, or they can never get back in to lift it.
         User::factory()->create([
             'role' => 'admin', 'status' => 'active', 'email_verified_at' => now(),
-            'email' => 'gate@admin.test', 'password' => \Illuminate\Support\Facades\Hash::make('secret-pass'),
+            'email' => 'gate@admin.test', 'password' => Hash::make('secret-pass'),
         ]);
         $this->get('/login')->assertOk();
         $this->post('/login', ['email' => 'gate@admin.test', 'password' => 'secret-pass'])
@@ -492,7 +497,7 @@ class SaaSTest extends TestCase
     public function test_all_settings_tabs_render(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
-        foreach (array_keys(\App\Http\Controllers\Admin\SettingController::TABS) as $tab) {
+        foreach (array_keys(SettingController::TABS) as $tab) {
             $this->actingAs($admin)->get(route('admin.settings', ['tab' => $tab]))->assertOk();
         }
     }
@@ -510,7 +515,7 @@ class SaaSTest extends TestCase
             'turnstile_secret' => 'secretkey123',
         ])->assertRedirect(route('admin.settings', ['tab' => 'safety']));
 
-        (new \App\Providers\SettingsServiceProvider($this->app))->boot();
+        (new SettingsServiceProvider($this->app))->boot();
 
         $this->assertSame(['bad.example', 'evil.example'], config('linkforge.safety.blocked_domains'));
         $this->assertTrue(config('linkforge.safety.providers.urlhaus'));
@@ -544,7 +549,7 @@ class SaaSTest extends TestCase
             'mail_host' => 'smtp.test', 'mail_port' => '465', 'mail_encryption' => 'ssl', 'mail_from_address' => 'a@b.com',
         ]);
 
-        (new \App\Providers\SettingsServiceProvider($this->app))->boot();
+        (new SettingsServiceProvider($this->app))->boot();
 
         $this->assertSame('stripe', config('linkforge.billing.gateway'));
         $this->assertSame('EUR', config('linkforge.billing.currency'));
@@ -610,7 +615,7 @@ class SaaSTest extends TestCase
         $user = User::factory()->create();
         $pro = Plan::where('slug', 'pro')->first(); // 29 / month
 
-        app(\App\Services\Billing\BillingService::class)->activate($user, $pro, 'offline');
+        app(BillingService::class)->activate($user, $pro, 'offline');
 
         $this->actingAs($admin)->get(route('admin.billing'))->assertOk()
             ->assertSee('USD 29.00')          // MRR + total revenue

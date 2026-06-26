@@ -6,6 +6,9 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Services\Analytics\GeoipUpdater;
 use App\Services\Analytics\GeoResolver;
+use GeoIp2\Database\Reader;
+use GeoIp2\Model\City;
+use GeoIp2\Model\Country;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -54,20 +57,20 @@ class GeoipTest extends TestCase
         // BadMethodCallException on ->country(); the country must be read off the
         // city record instead, or "Top countries" + the world map stay empty while
         // cities populate. Regression for exactly that production bug.
-        $cityReader = new class extends \GeoIp2\Database\Reader
+        $cityReader = new class extends Reader
         {
             public function __construct() {}
 
-            public function city(string $ipAddress): \GeoIp2\Model\City
+            public function city(string $ipAddress): City
             {
-                return new \GeoIp2\Model\City([
+                return new City([
                     'country' => ['iso_code' => 'GB', 'names' => ['en' => 'United Kingdom']],
                     'city' => ['names' => ['en' => 'London']],
                     'traits' => ['ip_address' => $ipAddress],
                 ], ['en']);
             }
 
-            public function country(string $ipAddress): \GeoIp2\Model\Country
+            public function country(string $ipAddress): Country
             {
                 throw new \BadMethodCallException('The country method cannot be used to open a GeoIP2-City database');
             }
@@ -83,18 +86,18 @@ class GeoipTest extends TestCase
     {
         // A Country-type .mmdb answers ->country() but throws on ->city(); country
         // must still resolve (via the fallback) and city is simply null.
-        $countryReader = new class extends \GeoIp2\Database\Reader
+        $countryReader = new class extends Reader
         {
             public function __construct() {}
 
-            public function city(string $ipAddress): \GeoIp2\Model\City
+            public function city(string $ipAddress): City
             {
                 throw new \BadMethodCallException('The city method cannot be used to open a GeoIP2-Country database');
             }
 
-            public function country(string $ipAddress): \GeoIp2\Model\Country
+            public function country(string $ipAddress): Country
             {
-                return new \GeoIp2\Model\Country([
+                return new Country([
                     'country' => ['iso_code' => 'US', 'names' => ['en' => 'United States']],
                     'traits' => ['ip_address' => $ipAddress],
                 ], ['en']);
@@ -108,9 +111,9 @@ class GeoipTest extends TestCase
     }
 
     /** Build a GeoResolver wired to a fake mmdb reader (no file on disk). */
-    private function withReader(\GeoIp2\Database\Reader $reader): GeoResolver
+    private function withReader(Reader $reader): GeoResolver
     {
-        $geo = new GeoResolver();
+        $geo = new GeoResolver;
         $rc = new \ReflectionClass($geo);
         $rc->getProperty('reader')->setValue($geo, $reader);
         $rc->getProperty('readerResolved')->setValue($geo, true);
@@ -154,6 +157,7 @@ class GeoipTest extends TestCase
             if (preg_match('/bytes=(\d+)-(\d+)/', $range, $m)) {
                 return Http::response(substr($gz, (int) $m[1], (int) $m[2] - (int) $m[1] + 1), 206);
             }
+
             return Http::response($gz, 200);
         });
 

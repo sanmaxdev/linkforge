@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Webhook;
+use App\Support\SafeUrl;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,7 +27,7 @@ class SendWebhook implements ShouldQueue
 
         // SSRF guard: never deliver to an internal/loopback/reserved address
         // (re-checked at send time in case DNS changed since the webhook was saved).
-        if (! \App\Support\SafeUrl::isSafe((string) $webhook->url)) {
+        if (! SafeUrl::isSafe((string) $webhook->url)) {
             return;
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Services\Analytics;
 
+use App\Models\Setting;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -17,7 +18,7 @@ class BioAnalytics
     {
         $parsed = UaParser::parse($request->userAgent());
         // Only trust Cloudflare headers when the operator confirmed they are behind CF.
-        $cf = \App\Models\Setting::get('geo_cf_headers') === '1';
+        $cf = Setting::get('geo_cf_headers') === '1';
         $ip = $cf ? ($request->header('CF-Connecting-IP') ?: $request->ip()) : $request->ip();
         $cfCountry = $cf ? $request->header('CF-IPCountry') : null;
         $referer = $request->headers->get('referer');

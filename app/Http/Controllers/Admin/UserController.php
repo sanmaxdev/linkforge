@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\TemplatedMail;
 use App\Models\AuditLog;
 use App\Models\Plan;
 use App\Models\User;
+use App\Support\Demo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -93,7 +97,7 @@ class UserController extends Controller
     /** Send a one-off email to a single user from the admin panel. */
     public function email(Request $request, User $user)
     {
-        if (\App\Support\Demo::enabled()) {
+        if (Demo::enabled()) {
             return back()->with('error', 'Sending email is disabled in demo mode.');
         }
 
@@ -103,10 +107,10 @@ class UserController extends Controller
         ]);
 
         try {
-            \Illuminate\Support\Facades\Mail::to($user->email)
-                ->send(new \App\Mail\TemplatedMail($data['subject'], $data['message'], null, null));
+            Mail::to($user->email)
+                ->send(new TemplatedMail($data['subject'], $data['message'], null, null));
         } catch (\Throwable $e) {
-            return back()->with('error', 'Could not send: '.\Illuminate\Support\Str::limit($e->getMessage(), 140));
+            return back()->with('error', 'Could not send: '.Str::limit($e->getMessage(), 140));
         }
 
         AuditLog::record('user.email', "Emailed {$user->email}: ".$data['subject'], $user);
@@ -150,7 +154,7 @@ class UserController extends Controller
     /** Bulk activate / suspend / delete selected users (never yourself or other admins). */
     public function bulk(Request $request)
     {
-        if (\App\Support\Demo::enabled()) {
+        if (Demo::enabled()) {
             return back()->with('error', 'Bulk actions are disabled in demo mode.');
         }
 

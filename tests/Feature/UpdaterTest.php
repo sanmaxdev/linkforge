@@ -47,7 +47,7 @@ class UpdaterTest extends TestCase
     private function makeZip(?array $manifest, array $files = [], array $raw = []): string
     {
         $path = $this->tmpDir('pkg').DIRECTORY_SEPARATOR.'update.zip';
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $zip->open($path, ZipArchive::CREATE);
         if ($manifest !== null) {
             $zip->addFromString('update.json', json_encode($manifest));

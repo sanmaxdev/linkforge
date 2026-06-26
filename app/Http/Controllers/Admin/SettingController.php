@@ -6,10 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\EmailTemplate;
 use App\Models\Setting;
+use App\Services\Ai\ClaudeClient;
 use App\Services\Analytics\GeoipUpdater;
+use App\Services\Auth\SocialProviders;
+use App\Support\Demo;
 use App\Support\EmailEvents;
+use App\Support\ImageResizer;
 use App\Support\ThemePalette;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class SettingController extends Controller
@@ -57,7 +64,7 @@ class SettingController extends Controller
         // DemoGuard. Secret values are masked (see SECRETS) and the infra values
         // below (server IP, document root) are swapped for sanitised placeholders,
         // so nothing sensitive leaks.
-        $demo = \App\Support\Demo::enabled();
+        $demo = Demo::enabled();
         $tabs = self::TABS;
         $tab = array_key_exists($request->query('tab'), $tabs) ? $request->query('tab') : array_key_first($tabs);
         $s = Setting::allCached();
@@ -230,14 +237,14 @@ class SettingController extends Controller
     }
 
     /** Store an uploaded favicon. SVG/ICO are kept as-is; other rasters become a 64px PNG. */
-    private function storeFavicon(\Illuminate\Http\UploadedFile $file): string
+    private function storeFavicon(UploadedFile $file): string
     {
         $dir = public_path('uploads/branding');
         if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
-        $base = 'favicon-'.\Illuminate\Support\Str::random(10);
+        $base = 'favicon-'.Str::random(10);
         $ext = strtolower($file->getClientOriginalExtension());
 
         if (in_array($ext, ['svg', 'ico'], true)) {
@@ -247,7 +254,7 @@ class SettingController extends Controller
         }
 
         $dest = $dir.DIRECTORY_SEPARATOR.$base.'.png';
-        if (\App\Support\ImageResizer::fitToPng($file->getPathname(), $dest, 64)) {
+        if (ImageResizer::fitToPng($file->getPathname(), $dest, 64)) {
             return asset('uploads/branding/'.$base.'.png');
         }
 
@@ -258,14 +265,14 @@ class SettingController extends Controller
     }
 
     /** Store an uploaded logo (raster auto-downscaled to 256px; SVG kept as-is) and return its public URL. */
-    private function storeLogo(\Illuminate\Http\UploadedFile $file): string
+    private function storeLogo(UploadedFile $file): string
     {
         $dir = public_path('uploads/branding');
         if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
-        $base = 'logo-'.\Illuminate\Support\Str::random(10);
+        $base = 'logo-'.Str::random(10);
 
         if (strtolower($file->getClientOriginalExtension()) === 'svg') {
             $file->move($dir, $base.'.svg');
@@ -274,7 +281,7 @@ class SettingController extends Controller
         }
 
         $dest = $dir.DIRECTORY_SEPARATOR.$base.'.png';
-        if (\App\Support\ImageResizer::fitToPng($file->getPathname(), $dest, 256)) {
+        if (ImageResizer::fitToPng($file->getPathname(), $dest, 256)) {
             return asset('uploads/branding/'.$base.'.png');
         }
 
@@ -293,7 +300,7 @@ class SettingController extends Controller
         ]);
 
         $out = [];
-        foreach (\App\Services\Auth\SocialProviders::keys() as $provider) {
+        foreach (SocialProviders::keys() as $provider) {
             $out["{$provider}_login_enabled"] = $request->boolean("{$provider}_login_enabled") ? '1' : '0';
             $out["{$provider}_client_id"] = (string) ($data["{$provider}_client_id"] ?? '');
             $this->applySecret($out, $request, "{$provider}_client_secret");
@@ -386,9 +393,9 @@ class SettingController extends Controller
      * Send a tiny request to the active AI provider so the operator can confirm
      * the saved key + model actually work. Always returns 200 with {ok, message}.
      */
-    public function aiTest(\App\Services\Ai\ClaudeClient $claude)
+    public function aiTest(ClaudeClient $claude)
     {
-        if (\App\Support\Demo::enabled()) {
+        if (Demo::enabled()) {
             return response()->json(['ok' => false, 'message' => 'Connection testing is disabled in demo mode.']);
         }
 
@@ -401,17 +408,17 @@ class SettingController extends Controller
 
             return response()->json([
                 'ok' => true,
-                'message' => 'Connection OK. Model "'.$claude->model().'" replied: '.\Illuminate\Support\Str::limit(trim($reply) ?: 'OK', 60),
+                'message' => 'Connection OK. Model "'.$claude->model().'" replied: '.Str::limit(trim($reply) ?: 'OK', 60),
             ]);
         } catch (\Throwable $e) {
-            return response()->json(['ok' => false, 'message' => 'Test failed: '.\Illuminate\Support\Str::limit($e->getMessage(), 140)]);
+            return response()->json(['ok' => false, 'message' => 'Test failed: '.Str::limit($e->getMessage(), 140)]);
         }
     }
 
     /** Send a test email to the current admin so the saved SMTP settings can be verified. */
     public function emailTest(Request $request)
     {
-        if (\App\Support\Demo::enabled()) {
+        if (Demo::enabled()) {
             return response()->json(['ok' => false, 'message' => 'Sending email is disabled in demo mode.']);
         }
 
@@ -419,7 +426,7 @@ class SettingController extends Controller
         $from = config('mail.from.address') ?: (config('mail.username') ?: 'no-reply@'.parse_url((string) config('app.url'), PHP_URL_HOST));
 
         try {
-            \Illuminate\Support\Facades\Mail::raw(
+            Mail::raw(
                 'This is a test email from '.config('linkforge.name').'. If you can read this, your SMTP settings are working.',
                 function ($m) use ($to, $from) {
                     $m->from($from, config('mail.from.name') ?: config('linkforge.name'))
@@ -430,7 +437,7 @@ class SettingController extends Controller
 
             return response()->json(['ok' => true, 'message' => 'Test email sent to '.$to.'. Check your inbox (and spam folder).']);
         } catch (\Throwable $e) {
-            return response()->json(['ok' => false, 'message' => 'Failed: '.\Illuminate\Support\Str::limit($e->getMessage(), 160)]);
+            return response()->json(['ok' => false, 'message' => 'Failed: '.Str::limit($e->getMessage(), 160)]);
         }
     }
 
@@ -494,7 +501,7 @@ class SettingController extends Controller
     }
 
     /** Store an uploaded social/OG image as-is (no downscale) and return its public URL. */
-    private function storeSocialImage(\Illuminate\Http\UploadedFile $file): string
+    private function storeSocialImage(UploadedFile $file): string
     {
         $dir = public_path('uploads/branding');
         if (! is_dir($dir)) {
@@ -504,7 +511,7 @@ class SettingController extends Controller
         if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
             $ext = 'png';
         }
-        $name = 'og-'.\Illuminate\Support\Str::random(10).'.'.$ext;
+        $name = 'og-'.Str::random(10).'.'.$ext;
         $file->move($dir, $name);
 
         return asset('uploads/branding/'.$name);
@@ -635,7 +642,7 @@ class SettingController extends Controller
 
     private function done(string $tab, string $message)
     {
-        \App\Models\AuditLog::record('settings.update', ucfirst($tab).' settings updated');
+        AuditLog::record('settings.update', ucfirst($tab).' settings updated');
 
         return redirect()->route('admin.settings', ['tab' => $tab])->with('status', $message);
     }

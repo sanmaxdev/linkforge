@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use App\Services\Auth\SocialProviders;
 use App\Support\Installer;
 use App\Support\ThemePalette;
 use Illuminate\Support\Facades\Schema;
@@ -109,7 +110,7 @@ class SettingsServiceProvider extends ServiceProvider
     /** @param array<string,string> $s Social login (Google / GitHub / Facebook OAuth). */
     private function applyAuth(array $s): void
     {
-        foreach (\App\Services\Auth\SocialProviders::keys() as $provider) {
+        foreach (SocialProviders::keys() as $provider) {
             if (isset($s["{$provider}_login_enabled"])) {
                 config(["services.{$provider}.enabled" => $s["{$provider}_login_enabled"] === '1']);
             }

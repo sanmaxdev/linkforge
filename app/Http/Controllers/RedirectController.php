@@ -6,9 +6,11 @@ use App\Models\Advertisement;
 use App\Models\BioPage;
 use App\Models\Link;
 use App\Models\Setting;
+use App\Services\Analytics\BioAnalytics;
 use App\Services\Analytics\GeoResolver;
 use App\Services\Analytics\RecordClick;
 use App\Services\Analytics\UaParser;
+use App\Services\Billing\PlanGate;
 use App\Services\Linking\DomainResolver;
 use App\Services\Linking\RuleResolver;
 use Illuminate\Http\Request;
@@ -130,7 +132,7 @@ class RedirectController extends Controller
         }
 
         $owner = $link->relationLoaded('user') ? $link->user : $link->user()->first();
-        if (! $owner || ! app(\App\Services\Billing\PlanGate::class)->allows($owner, 'deep_links')) {
+        if (! $owner || ! app(PlanGate::class)->allows($owner, 'deep_links')) {
             return null;
         }
 
@@ -155,8 +157,8 @@ class RedirectController extends Controller
         }
 
         // Premium / ad-free: never show operator ads; show the member's own ad slots if set.
-        if (app(\App\Services\Billing\PlanGate::class)->allows($owner, 'ad_free')) {
-            $slots = \App\Http\Controllers\MonetizationController::slotsFor($owner);
+        if (app(PlanGate::class)->allows($owner, 'ad_free')) {
+            $slots = MonetizationController::slotsFor($owner);
             $slots = array_values(array_filter($slots)); // drop the form padding / empties
 
             return $slots ? ['own' => true, 'slots' => $slots] : null;
@@ -218,7 +220,7 @@ class RedirectController extends Controller
             return response()->view('bio.gate', ['page' => $page, 'mode' => 'sensitive', 'error' => null]);
         }
 
-        $bio = app(\App\Services\Analytics\BioAnalytics::class);
+        $bio = app(BioAnalytics::class);
         app()->terminating(function () use ($page, $bio, $request) {
             DB::table('bio_pages')->where('id', $page->id)->increment('views');
             $bio->record($page->id, null, 'view', $request);

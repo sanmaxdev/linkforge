@@ -31,7 +31,7 @@ class HtmlSanitizer
             return '';
         }
 
-        $doc = new DOMDocument();
+        $doc = new DOMDocument;
         libxml_use_internal_errors(true);
         $doc->loadHTML(
             '<?xml encoding="UTF-8"><div id="__root">'.$html.'</div>',
@@ -61,6 +61,7 @@ class HtmlSanitizer
                 $tag = strtolower($child->tagName);
                 if (! array_key_exists($tag, self::ALLOWED)) {
                     $node->removeChild($child); // drop element and its subtree
+
                     continue;
                 }
                 self::cleanAttributes($child, self::ALLOWED[$tag]);

@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Services\Analytics\GeoResolver;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
@@ -14,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Open the GeoIP .mmdb reader at most once per request.
-        $this->app->singleton(\App\Services\Analytics\GeoResolver::class);
+        $this->app->singleton(GeoResolver::class);
     }
 
     /**
@@ -30,6 +32,6 @@ class AppServiceProvider extends ServiceProvider
         Model::shouldBeStrict($this->app->isLocal());
 
         // @lfdate($date) prints a date in the operator's chosen format + timezone.
-        \Illuminate\Support\Facades\Blade::directive('lfdate', fn ($expr) => "<?php echo \App\Support\Dates::format($expr); ?>");
+        Blade::directive('lfdate', fn ($expr) => "<?php echo \App\Support\Dates::format($expr); ?>");
     }
 }

@@ -5,12 +5,14 @@ namespace Tests\Feature;
 use App\Jobs\ScanLink;
 use App\Jobs\SendWebhook;
 use App\Models\Domain;
+use App\Models\Link;
 use App\Models\Plan;
 use App\Models\User;
 use App\Services\Safety\ThreatScanner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ApiTest extends TestCase
@@ -103,11 +105,11 @@ class ApiTest extends TestCase
             && $request->hasHeader('X-LinkForge-Event', 'link.created'));
     }
 
-    private function makeLink(User $user, array $attrs = []): \App\Models\Link
+    private function makeLink(User $user, array $attrs = []): Link
     {
         return $user->links()->create(array_merge([
             'domain_id' => Domain::where('is_default', true)->value('id'),
-            'alias' => 'a'.\Illuminate\Support\Str::random(6),
+            'alias' => 'a'.Str::random(6),
             'long_url' => 'https://example.com',
             'type' => 'direct',
             'safety_status' => 'safe',

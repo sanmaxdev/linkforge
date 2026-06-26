@@ -5,10 +5,13 @@ namespace Tests\Feature;
 use App\Jobs\ScanLink;
 use App\Models\Domain;
 use App\Models\Link;
+use App\Models\Setting;
 use App\Models\User;
+use App\Services\Analytics\GeoResolver;
 use App\Services\Linking\RuleResolver;
 use App\Services\Safety\ThreatScanner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -155,7 +158,7 @@ class RoutingAndSafetyTest extends TestCase
 
     public function test_geo_resolver_prefers_cloudflare_country_header(): void
     {
-        $geo = app(\App\Services\Analytics\GeoResolver::class);
+        $geo = app(GeoResolver::class);
 
         $this->assertSame('DE', $geo->country('1.2.3.4', 'DE'));
         $this->assertSame('GB', $geo->country(null, 'gb'));   // case-normalized
@@ -166,7 +169,7 @@ class RoutingAndSafetyTest extends TestCase
 
     public function test_redirect_geo_targets_using_cloudflare_header(): void
     {
-        \App\Models\Setting::put('geo_cf_headers', '1'); // operator confirmed they are behind Cloudflare
+        Setting::put('geo_cf_headers', '1'); // operator confirmed they are behind Cloudflare
         $link = $this->makeLink(['alias' => 'geo', 'long_url' => 'https://global.example.com']);
         $link->rules()->create(['type' => 'geo', 'match_value' => ['values' => ['DE']], 'target_url' => 'https://de.example.com', 'sort' => 0]);
 
@@ -176,7 +179,7 @@ class RoutingAndSafetyTest extends TestCase
 
     public function test_click_records_country_from_cloudflare_header_when_enabled(): void
     {
-        \App\Models\Setting::put('geo_cf_headers', '1');
+        Setting::put('geo_cf_headers', '1');
         $link = $this->makeLink(['alias' => 'cc']);
 
         $this->withHeaders(['CF-IPCountry' => 'FR'])->get('/cc');
@@ -195,7 +198,7 @@ class RoutingAndSafetyTest extends TestCase
 
     public function test_password_unlock_is_rate_limited(): void
     {
-        $link = $this->makeLink(['alias' => 'locked', 'password' => \Illuminate\Support\Facades\Hash::make('secret')]);
+        $link = $this->makeLink(['alias' => 'locked', 'password' => Hash::make('secret')]);
 
         $status = null;
         for ($i = 0; $i < 12; $i++) {

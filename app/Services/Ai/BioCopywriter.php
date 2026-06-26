@@ -15,7 +15,7 @@ class BioCopywriter
     {
         $system = 'You write short, friendly copy for a link-in-bio profile page. Given a topic or '
             .'description, return a display name, a one-line headline, and a 1 to 2 sentence bio. Keep '
-            ."it warm, concrete and concise. Do not use em dashes or hashtags. Return only the JSON.";
+            .'it warm, concrete and concise. Do not use em dashes or hashtags. Return only the JSON.';
 
         $schema = [
             'type' => 'object',

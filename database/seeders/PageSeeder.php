@@ -70,7 +70,7 @@ class PageSeeder extends Seeder
                     ."- **Support:** customers can open a ticket from the dashboard for the fastest reply.\n"
                     ."- **Email:** replace this with your support email address.\n"
                     ."- **Business hours:** add the hours your team is available.\n\n"
-                    ."Edit this page in the admin panel under **Content -> Pages** to add your real contact details.",
+                    .'Edit this page in the admin panel under **Content -> Pages** to add your real contact details.',
             ],
         ];
     }

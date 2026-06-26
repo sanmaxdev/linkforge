@@ -3,8 +3,11 @@
 namespace App\Actions\Fortify;
 
 use App\Models\Plan;
+use App\Models\Setting;
 use App\Models\User;
 use App\Rules\Turnstile;
+use App\Services\Affiliate\ReferralService;
+use App\Services\Mail\Postman;
 use App\Services\Safety\LinkSafety;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -35,7 +38,7 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
-            'cf-turnstile-response' => [new Turnstile()],
+            'cf-turnstile-response' => [new Turnstile],
         ])->validate();
 
         // Honeypot: a hidden field that only bots fill in.
@@ -49,7 +52,7 @@ class CreateNewUser implements CreatesNewUsers
         }
 
         // Operator email-domain blocklist (Settings -> General).
-        $blocked = collect(preg_split('/[\s,]+/', (string) \App\Models\Setting::get('signup_blocked_domains'), -1, PREG_SPLIT_NO_EMPTY))
+        $blocked = collect(preg_split('/[\s,]+/', (string) Setting::get('signup_blocked_domains'), -1, PREG_SPLIT_NO_EMPTY))
             ->map(fn ($d) => ltrim(mb_strtolower(trim($d)), '@'))->filter()->all();
         $emailDomain = mb_strtolower((string) substr((string) strrchr($input['email'], '@'), 1));
         if ($emailDomain !== '' && in_array($emailDomain, $blocked, true)) {
@@ -57,7 +60,7 @@ class CreateNewUser implements CreatesNewUsers
         }
 
         // Starting plan: the operator-selected default (Settings -> General), else Free.
-        $defaultPlanId = \App\Models\Setting::get('signup_default_plan');
+        $defaultPlanId = Setting::get('signup_default_plan');
         $free = ($defaultPlanId ? Plan::find($defaultPlanId) : null) ?: Plan::where('slug', 'free')->first();
 
         $user = User::create([
@@ -69,10 +72,10 @@ class CreateNewUser implements CreatesNewUsers
         ]);
 
         // Attribute the signup to a referrer if they arrived via a referral link.
-        app(\App\Services\Affiliate\ReferralService::class)
+        app(ReferralService::class)
             ->attributeSignup($user, request()->cookie('affiliate_ref'));
 
-        $postman = app(\App\Services\Mail\Postman::class);
+        $postman = app(Postman::class);
         $postman->send('welcome', $user->email, [
             'name' => $user->name, 'email' => $user->email, 'action_url' => route('dashboard'),
         ]);

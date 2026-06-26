@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Campaign;
 use App\Models\Domain;
 use App\Models\Link;
 use App\Models\User;

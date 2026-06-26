@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AbuseReport;
+use App\Models\AuditLog;
 use App\Models\Link;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Support\Demo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
@@ -104,7 +108,7 @@ class AdminController extends Controller
         };
 
         Link::forgetCache($link->domain_id, $link->alias);
-        \App\Models\AuditLog::record("link.{$action}", "/{$link->alias}", $link);
+        AuditLog::record("link.{$action}", "/{$link->alias}", $link);
 
         return back()->with('status', 'Link updated.');
     }
@@ -120,10 +124,10 @@ class AdminController extends Controller
             $report->link->update(['safety_status' => 'blocked', 'is_active' => false]);
             Link::forgetCache($report->link->domain_id, $report->link->alias);
             $report->update(['status' => 'actioned']);
-            \App\Models\AuditLog::record('report.block', "Report #{$report->id}", $report);
+            AuditLog::record('report.block', "Report #{$report->id}", $report);
         } elseif ($request->input('action') === 'dismiss') {
             $report->update(['status' => 'dismissed']);
-            \App\Models\AuditLog::record('report.dismiss', "Report #{$report->id}", $report);
+            AuditLog::record('report.dismiss', "Report #{$report->id}", $report);
         }
 
         return back()->with('status', 'Report updated.');
@@ -132,14 +136,14 @@ class AdminController extends Controller
     public function audit()
     {
         return view('admin.audit', [
-            'logs' => \App\Models\AuditLog::with('user')->latest()->paginate(40),
+            'logs' => AuditLog::with('user')->latest()->paginate(40),
         ]);
     }
 
     /** Run a safe maintenance command from the admin panel (no shell/cron needed). */
     public function maintenance(Request $request)
     {
-        if (\App\Support\Demo::enabled()) {
+        if (Demo::enabled()) {
             return back()->with('error', 'Maintenance tools are disabled in demo mode.');
         }
 
@@ -153,15 +157,15 @@ class AdminController extends Controller
 
         try {
             match ($action) {
-                'clear-cache' => array_map(fn ($c) => \Illuminate\Support\Facades\Artisan::call($c), ['cache:clear', 'config:clear', 'view:clear', 'route:clear']),
-                'run-rollup' => \Illuminate\Support\Facades\Artisan::call('clicks:rollup'),
-                'run-queue' => \Illuminate\Support\Facades\Artisan::call('queue:work', ['--stop-when-empty' => true, '--max-time' => 20]),
+                'clear-cache' => array_map(fn ($c) => Artisan::call($c), ['cache:clear', 'config:clear', 'view:clear', 'route:clear']),
+                'run-rollup' => Artisan::call('clicks:rollup'),
+                'run-queue' => Artisan::call('queue:work', ['--stop-when-empty' => true, '--max-time' => 20]),
             };
-            \App\Models\AuditLog::record('maintenance.'.$action, $actions[$action]);
+            AuditLog::record('maintenance.'.$action, $actions[$action]);
 
             return back()->with('status', $actions[$action].'.');
         } catch (\Throwable $e) {
-            return back()->with('error', 'Failed: '.\Illuminate\Support\Str::limit($e->getMessage(), 160));
+            return back()->with('error', 'Failed: '.Str::limit($e->getMessage(), 160));
         }
     }
 }

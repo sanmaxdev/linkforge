@@ -22,7 +22,7 @@ class BioThemes
         'space' => "'Space Grotesk', ui-sans-serif, sans-serif",
         'lora' => "'Lora', Georgia, serif",
         'mono' => "ui-monospace, 'Cascadia Code', Menlo, monospace",
-        'system' => "system-ui, -apple-system, sans-serif",
+        'system' => 'system-ui, -apple-system, sans-serif',
     ];
 
     /** @return array<string, string> font key => display label */

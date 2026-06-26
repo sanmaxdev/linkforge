@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Page;
+use App\Support\FooterPages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -27,7 +28,7 @@ class PageController extends Controller
         $data = $this->validatePage($request);
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['title']);
         Page::create($data);
-        \App\Support\FooterPages::forget();
+        FooterPages::forget();
         AuditLog::record('page.create', 'Created page: '.$data['title']);
 
         return redirect()->route('admin.pages.index')->with('status', 'Page saved.');
@@ -43,7 +44,7 @@ class PageController extends Controller
         $data = $this->validatePage($request);
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['title'], $page->id);
         $page->update($data);
-        \App\Support\FooterPages::forget();
+        FooterPages::forget();
         AuditLog::record('page.update', 'Updated page: '.$page->title);
 
         return redirect()->route('admin.pages.index')->with('status', 'Page updated.');
@@ -52,7 +53,7 @@ class PageController extends Controller
     public function destroy(Page $page)
     {
         $page->delete();
-        \App\Support\FooterPages::forget();
+        FooterPages::forget();
         AuditLog::record('page.delete', 'Deleted page: '.$page->title);
 
         return back()->with('status', 'Page deleted.');

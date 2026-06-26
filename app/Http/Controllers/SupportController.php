@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\User;
+use App\Services\Mail\Postman;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -48,12 +50,12 @@ class SupportController extends Controller
             'created_at' => now(),
         ]);
 
-        $postman = app(\App\Services\Mail\Postman::class);
+        $postman = app(Postman::class);
         $postman->send('ticket_opened', $request->user()->email, [
             'name' => $request->user()->name, 'ticket_id' => $ticket->id, 'ticket_subject' => $ticket->subject,
             'action_url' => route('support.show', $ticket),
         ]);
-        $postman->send('admin_new_ticket', \App\Models\User::where('role', 'admin')->pluck('email')->all(), [
+        $postman->send('admin_new_ticket', User::where('role', 'admin')->pluck('email')->all(), [
             'customer_name' => $request->user()->name, 'customer_email' => $request->user()->email,
             'ticket_id' => $ticket->id, 'ticket_subject' => $ticket->subject, 'priority' => $ticket->priority,
             'action_url' => route('admin.tickets.show', $ticket),

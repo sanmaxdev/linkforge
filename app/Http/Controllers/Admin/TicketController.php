@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Ticket;
+use App\Services\Mail\Postman;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -51,7 +52,7 @@ class TicketController extends Controller
 
         $ticket->loadMissing('user');
         if ($ticket->user) {
-            app(\App\Services\Mail\Postman::class)->send('ticket_reply', $ticket->user->email, [
+            app(Postman::class)->send('ticket_reply', $ticket->user->email, [
                 'name' => $ticket->user->name, 'ticket_id' => $ticket->id, 'ticket_subject' => $ticket->subject,
                 'action_url' => route('support.show', $ticket),
             ]);

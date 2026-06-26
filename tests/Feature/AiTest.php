@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Domain;
+use App\Models\Setting;
 use App\Models\User;
+use App\Providers\SettingsServiceProvider;
 use App\Services\Ai\ClaudeClient;
+use App\Services\Ai\NlAnalytics;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -152,7 +155,7 @@ class AiTest extends TestCase
             ->assertJsonPath('intent.metric', 'clicks');
 
         // The model only chose from the allowlist; the figure came from the rollup table.
-        $this->assertContains($response->json('intent.dimension'), \App\Services\Ai\NlAnalytics::DIMENSIONS);
+        $this->assertContains($response->json('intent.dimension'), NlAnalytics::DIMENSIONS);
         $this->assertSame(4, (int) $user->fresh()->ai_credits);
 
         // The narration request carried only the computed aggregate to the model.
@@ -429,10 +432,10 @@ class AiTest extends TestCase
             'ai_cost_alias' => 1, 'ai_cost_ask' => 1, 'ai_cost_insight' => 1,
         ])->assertRedirect();
 
-        $this->assertSame('openrouter', \App\Models\Setting::get('ai_provider'));
-        $this->assertSame('openai/gpt-4o', \App\Models\Setting::get('openrouter_model'));
+        $this->assertSame('openrouter', Setting::get('ai_provider'));
+        $this->assertSame('openai/gpt-4o', Setting::get('openrouter_model'));
 
-        (new \App\Providers\SettingsServiceProvider($this->app))->boot();
+        (new SettingsServiceProvider($this->app))->boot();
         $this->assertSame('openrouter', config('linkforge.ai.provider'));
         $this->assertSame('openai/gpt-4o', config('linkforge.ai.openrouter.model'));
         $this->assertSame('sk-or-x', config('linkforge.ai.openrouter.key'));

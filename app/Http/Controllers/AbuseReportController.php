@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\AbuseReport;
 use App\Models\Link;
+use App\Models\User;
 use App\Services\Linking\DomainResolver;
+use App\Services\Mail\Postman;
 use Illuminate\Http\Request;
 
 class AbuseReportController extends Controller
@@ -40,9 +42,9 @@ class AbuseReportController extends Controller
 
         // Alert staff (honours the per-event toggle + on/off in Settings -> Email).
         $link = $linkId ? Link::find($linkId) : null;
-        app(\App\Services\Mail\Postman::class)->send(
+        app(Postman::class)->send(
             'admin_new_report',
-            \App\Models\User::where('role', 'admin')->pluck('email')->all(),
+            User::where('role', 'admin')->pluck('email')->all(),
             [
                 'alias' => ($data['alias'] ?? '') ?: '(unknown)',
                 'short_url' => $link ? $request->getSchemeAndHttpHost().'/'.$link->alias : '(not found)',

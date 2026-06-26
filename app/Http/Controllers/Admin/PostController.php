@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
@@ -94,7 +95,7 @@ class PostController extends Controller
         return $url !== '' ? $url : null;
     }
 
-    private function storeCover(\Illuminate\Http\UploadedFile $file): string
+    private function storeCover(UploadedFile $file): string
     {
         $dir = public_path('uploads/blog');
         if (! is_dir($dir)) {

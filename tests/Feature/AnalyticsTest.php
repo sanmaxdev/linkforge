@@ -2,15 +2,17 @@
 
 namespace Tests\Feature;
 
-use App\Models\BioPage;
+use App\Http\Controllers\AnalyticsController;
 use App\Models\Domain;
 use App\Models\Link;
 use App\Models\QrCode;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Tests\TestCase;
 
 class AnalyticsTest extends TestCase
@@ -205,12 +207,12 @@ class AnalyticsTest extends TestCase
         $link->user_id = (string) $link->user_id;
         $this->assertNotSame($owner->id, $link->user_id, 'precondition: the ids are different php types');
 
-        $request = \Illuminate\Http\Request::create('/');
+        $request = Request::create('/');
         $request->setUserResolver(fn () => $owner); // $owner->id is an int
 
         // With a strict === check this aborts 403; the int-cast comparison passes.
-        $response = app(\App\Http\Controllers\AnalyticsController::class)->exportLink($request, $link);
-        $this->assertInstanceOf(\Symfony\Component\HttpFoundation\StreamedResponse::class, $response);
+        $response = app(AnalyticsController::class)->exportLink($request, $link);
+        $this->assertInstanceOf(StreamedResponse::class, $response);
     }
 
     public function test_analytics_rolls_up_on_read_when_no_cron_has_run(): void

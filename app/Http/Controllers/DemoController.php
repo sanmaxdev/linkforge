@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Support\Demo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -17,7 +18,7 @@ class DemoController extends Controller
         abort_unless(Demo::enabled(), 404);
 
         $email = $role === 'admin' ? Demo::ADMIN_EMAIL : Demo::USER_EMAIL;
-        $user = \App\Models\User::where('email', $email)->first();
+        $user = User::where('email', $email)->first();
 
         // Self-heal: if the hourly demo:reset hasn't seeded the accounts yet,
         // build the demo now so the one-click logins always work.
@@ -27,7 +28,7 @@ class DemoController extends Controller
             } catch (\Throwable $e) {
                 // fall through to the 404 below
             }
-            $user = \App\Models\User::where('email', $email)->first();
+            $user = User::where('email', $email)->first();
         }
 
         abort_unless($user, 404);

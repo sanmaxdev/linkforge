@@ -5,12 +5,14 @@ namespace App\Services\Billing;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\User;
+use App\Services\Affiliate\ReferralService;
 use App\Services\Billing\Contracts\PaymentGateway;
 use App\Services\Billing\Gateways\CoinPaymentsGateway;
 use App\Services\Billing\Gateways\CryptoComGateway;
 use App\Services\Billing\Gateways\OfflineGateway;
 use App\Services\Billing\Gateways\PayPalGateway;
 use App\Services\Billing\Gateways\StripeGateway;
+use App\Services\Mail\Postman;
 
 class BillingService
 {
@@ -56,7 +58,7 @@ class BillingService
                 'currency' => $plan->currency,
                 'status' => 'completed',
             ]);
-            app(\App\Services\Affiliate\ReferralService::class)->commissionForPayment($payment);
+            app(ReferralService::class)->commissionForPayment($payment);
         }
     }
 
@@ -88,7 +90,7 @@ class BillingService
         if ($payment->user && $payment->plan) {
             $this->applyPlan($payment->user, $payment->plan, $gateway, $reference);
         }
-        app(\App\Services\Affiliate\ReferralService::class)->commissionForPayment($payment);
+        app(ReferralService::class)->commissionForPayment($payment);
 
         return $payment;
     }
@@ -119,7 +121,7 @@ class BillingService
         ])->save();
 
         if ((float) $plan->price > 0) {
-            app(\App\Services\Mail\Postman::class)->send('subscription_activated', $user->email, [
+            app(Postman::class)->send('subscription_activated', $user->email, [
                 'name' => $user->name,
                 'plan_name' => $plan->name,
                 'amount' => $plan->currency.' '.number_format((float) $plan->price, 2),

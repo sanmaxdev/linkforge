@@ -33,8 +33,8 @@ class QrService
         [$fr, $fg, $fb] = $this->hexToRgb((string) ($design['fg'] ?? '#0f172a'));
         [$br, $bg, $bb] = $this->hexToRgb((string) ($design['bg'] ?? '#ffffff'));
 
-        $result = (new Builder())->build(
-            writer: $format === 'svg' ? new SvgWriter() : new PngWriter(),
+        $result = (new Builder)->build(
+            writer: $format === 'svg' ? new SvgWriter : new PngWriter,
             data: $data,
             encoding: new Encoding('UTF-8'),
             errorCorrectionLevel: ErrorCorrectionLevel::High,

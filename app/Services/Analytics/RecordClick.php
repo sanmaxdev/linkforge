@@ -2,6 +2,7 @@
 
 namespace App\Services\Analytics;
 
+use App\Models\Webhook;
 use Illuminate\Support\Facades\DB;
 
 class RecordClick
@@ -47,7 +48,7 @@ class RecordClick
 
             // Notify subscribed webhooks of real (non-bot) clicks.
             if (! $parsed['is_bot'] && ! empty($ctx['user_id'])) {
-                \App\Models\Webhook::fire((int) $ctx['user_id'], 'link.clicked', [
+                Webhook::fire((int) $ctx['user_id'], 'link.clicked', [
                     'id' => $ctx['link_id'],
                     'alias' => $ctx['alias'] ?? null,
                     'short_url' => $ctx['short_url'] ?? null,

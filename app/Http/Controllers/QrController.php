@@ -161,6 +161,7 @@ class QrController extends Controller
             }
             if (! filter_var($url, FILTER_VALIDATE_URL)) {
                 $skipped++;
+
                 continue;
             }
             if (! $gate->canCreate($request->user(), 'max_qr')) {

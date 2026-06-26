@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Advertisement;
 use App\Models\AuditLog;
+use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -16,8 +18,8 @@ class AdvertisementController extends Controller
         return view('admin.ads.index', [
             'ads' => Advertisement::orderBy('placement')->orderBy('sort')->orderByDesc('id')->get(),
             'placements' => Advertisement::PLACEMENTS,
-            'adsEnabled' => \App\Models\Setting::get('ads_enabled') === '1',
-            'skipSeconds' => (int) \App\Models\Setting::get('ads_skip_seconds', 5),
+            'adsEnabled' => Setting::get('ads_enabled') === '1',
+            'skipSeconds' => (int) Setting::get('ads_skip_seconds', 5),
         ]);
     }
 
@@ -26,7 +28,7 @@ class AdvertisementController extends Controller
     {
         $data = $request->validate(['ads_skip_seconds' => ['nullable', 'integer', 'min:0', 'max:60']]);
 
-        \App\Models\Setting::putMany([
+        Setting::putMany([
             'ads_enabled' => $request->boolean('ads_enabled') ? '1' : '0',
             'ads_skip_seconds' => (string) ((int) ($data['ads_skip_seconds'] ?? 5)),
         ]);
@@ -116,7 +118,7 @@ class AdvertisementController extends Controller
         }
     }
 
-    private function storeImage(\Illuminate\Http\UploadedFile $file): string
+    private function storeImage(UploadedFile $file): string
     {
         $dir = public_path('uploads/ads');
         if (! is_dir($dir)) {
