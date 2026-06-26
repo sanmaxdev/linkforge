@@ -205,37 +205,10 @@ return [
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Envato license verification
-    |--------------------------------------------------------------------------
-    |
-    | The buyer's CodeCanyon purchase code is verified through a small relay
-    | the AUTHOR hosts (it holds the Envato personal token and calls the Envato
-    | API), so the secret token never ships inside the buyer's copy. Leave the
-    | relay URL empty to disable verification (the installer then accepts the
-    | code unverified and never blocks the site — verification always fails open).
-    |
-    */
-    'license' => [
-        // The author-hosted verification relay (holds the Envato token). Ships pointing at
-        // the author's relay so every copy verifies out of the box; override per-install
-        // with LF_LICENSE_RELAY, or set to '' to disable online verification.
-        'relay_url' => env('LF_LICENSE_RELAY', 'https://license.sangeeth.biz'),
-        'item_id' => env('LF_ENVATO_ITEM_ID', ''), // your CodeCanyon item id (optional cross-check)
-
-        // Ed25519 PUBLIC key that the relay's verify responses are signed with. Baked in (a
-        // trust root, like the OTA key): the app only trusts a "valid" verdict carrying a
-        // signature this key verifies, so a fake/local relay cannot forge a valid license.
-        // The matching SECRET lives only on the author's relay (LICENSE_SIGNING_SECRET).
-        // Missing/unsigned => the install is treated as "unverified" (fail-open, never blocked).
-        'verify_public_key' => '9CAUHqWaB46SSpp2A3GOZnoMwKTUwRiZaetUVdjbZCo=',
-    ],
-
     // Demo mode: public showcase. Destructive + config-changing actions are blocked,
     // emails are suppressed, one-click logins are shown and a "this is a demo" banner +
     // buy CTA appear. Env-only (no admin UI) so customer installs never expose it —
     // set LF_DEMO=true in .env on a SEPARATE demo server only. See DEMO.md.
     'demo' => env('LF_DEMO', false),
-    'demo_buy_url' => env('LF_DEMO_BUY_URL', 'https://codecanyon.net'),
+    'demo_buy_url' => env('LF_DEMO_BUY_URL', 'https://github.com/sanmaxdev/linkforge'),
 ];

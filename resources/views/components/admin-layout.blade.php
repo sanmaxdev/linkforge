@@ -52,7 +52,6 @@
                         ['admin.audit', 'Audit log', 'M9 11l3 3 8-8M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
                         ['admin.languages', 'Languages', 'M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20M12 2a9 9 0 1 0 0 20 9 9 0 0 0 0-20z'],
                         ['admin.updates', 'Updates', 'M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5'],
-                        ['admin.license', 'License', 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4'],
                         ['admin.settings', 'Settings', 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15H4.5a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 6 9.4l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 11 4.6V4.5a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 2.82 1.17l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 11H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'],
                     ]],
                 ];
@@ -106,15 +105,6 @@
         </header>
 
         <main class="p-4 sm:p-6 lg:p-8">
-            @if (! \App\Support\Demo::enabled() && app(\App\Services\LicenseService::class)->hasProblem())
-                <div class="mb-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    <svg class="mt-0.5 h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg>
-                    <div>
-                        <p class="font-semibold">License could not be verified</p>
-                        <p class="mt-0.5">This purchase code is no longer valid (refunded, charged back, or revoked). Your site keeps working — <a href="{{ route('admin.license') }}" class="font-medium underline">review your license</a>.</p>
-                    </div>
-                </div>
-            @endif
             {{ $slot }}
         </main>
     </div>

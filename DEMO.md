@@ -2,8 +2,8 @@
 
 LinkForge has a built-in **demo mode** that turns an install into a safe public
 showcase: visitors can try every feature, but destructive and configuration
-changes are blocked, no real email is sent, and a "this is a demo" bar + buy CTA
-are shown. One-click logins let people explore as both an **admin** and a
+changes are blocked, no real email is sent, and a "this is a demo" bar + a
+"view source" link are shown. One-click logins let people explore as both an **admin** and a
 **customer** without a password.
 
 > ⚠️ **Run demo mode on a SEPARATE install only** (its own domain/subdomain and
@@ -17,7 +17,7 @@ are shown. One-click logins let people explore as both an **admin** and a
 Install LinkForge as usual on a dedicated host, e.g. **`demo.yoursite.com`**, with
 its **own database** (do not share your production DB). Complete the web installer.
 
-Recommended layout (mirrors how CodeCanyon competitors host demos):
+Recommended layout:
 
 | URL | Purpose |
 |---|---|
@@ -31,7 +31,7 @@ installs never expose it). Add to the demo server's `.env`:
 
 ```env
 LF_DEMO=true
-LF_DEMO_BUY_URL=https://codecanyon.net/item/your-item
+LF_DEMO_BUY_URL=https://github.com/sanmaxdev/linkforge
 ```
 
 Then clear the config cache:
@@ -95,7 +95,7 @@ can touch your production data. Keep the two on different domains and databases.
 ## 6. Tips for a great demo
 
 - Use a subdomain (`demo.…`) and link to it from your sales page.
-- Set `LF_DEMO_BUY_URL` to your CodeCanyon item so every CTA converts.
+- Set `LF_DEMO_BUY_URL` to your repo or project page (defaults to the GitHub repo).
 - Pre-configure a branded custom domain and a couple of social logins (with real
   OAuth apps) if you want those shown — otherwise they stay hidden.
 - Let the short links accumulate real clicks: visitors clicking the sample links

@@ -7,17 +7,19 @@ use App\Models\Domain;
 use App\Models\Plan;
 use App\Models\Setting;
 use App\Models\User;
-use App\Services\LicenseService;
 use App\Support\Installer;
+use Database\Seeders\HelpArticleSeeder;
+use Database\Seeders\PageSeeder;
+use Database\Seeders\PlanSeeder;
+use Database\Seeders\SettingSeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 /**
- * cPanel-friendly first-run installer. Walks the buyer through a requirements
- * check, database + .env setup (with migrations), the admin account, and the
- * Envato license, then writes the install lock. No shell or Composer access is
- * assumed — every step runs in the browser.
+ * Friendly first-run installer. Walks the operator through a requirements check,
+ * database + .env setup (with migrations), and the admin account, then writes the
+ * install lock. No shell or Composer access is assumed — every step runs in the browser.
  */
 class InstallController extends Controller
 {
@@ -87,12 +89,12 @@ class InstallController extends Controller
 
         try {
             Artisan::call('migrate', ['--force' => true]);
-            Artisan::call('db:seed', ['--class' => \Database\Seeders\PlanSeeder::class, '--force' => true]);
-            Artisan::call('db:seed', ['--class' => \Database\Seeders\SettingSeeder::class, '--force' => true]);
+            Artisan::call('db:seed', ['--class' => PlanSeeder::class, '--force' => true]);
+            Artisan::call('db:seed', ['--class' => SettingSeeder::class, '--force' => true]);
             // Ship a ready-made Help Center (operators can edit or delete the articles).
-            Artisan::call('db:seed', ['--class' => \Database\Seeders\HelpArticleSeeder::class, '--force' => true]);
+            Artisan::call('db:seed', ['--class' => HelpArticleSeeder::class, '--force' => true]);
             // Ship ready-to-edit Terms / Privacy / Contact pages, linked in the footer.
-            Artisan::call('db:seed', ['--class' => \Database\Seeders\PageSeeder::class, '--force' => true]);
+            Artisan::call('db:seed', ['--class' => PageSeeder::class, '--force' => true]);
         } catch (\Throwable $e) {
             return back()->withInput()->with('error', 'Database setup failed: '.$e->getMessage());
         }
@@ -145,39 +147,6 @@ class InstallController extends Controller
         );
 
         session(['install.admin' => $user->id]);
-
-        return redirect()->route('install.license');
-    }
-
-    public function license()
-    {
-        if (! session('install.admin')) {
-            return redirect()->route('install.account');
-        }
-
-        return view('install.license');
-    }
-
-    public function saveLicense(Request $request, LicenseService $license)
-    {
-        if (! session('install.admin')) {
-            return redirect()->route('install.account');
-        }
-
-        $data = $request->validate(
-            ['purchase_code' => ['required', 'string', 'max:100']],
-            ['purchase_code.required' => 'A valid Envato purchase code is required to install LinkForge.'],
-        );
-        $code = trim($data['purchase_code']);
-
-        // A license is mandatory. verify() still fails open on relay/network errors
-        // (so a verification-server outage can't brick installs), but an empty or
-        // malformed code, or a definitive "invalid" from the relay, is rejected.
-        $result = $license->verify($code, $request->getHost());
-        if (! $result['valid']) {
-            return back()->withInput()->with('error', $result['message']);
-        }
-        $license->store($code, $result);
 
         return redirect()->route('install.complete');
     }

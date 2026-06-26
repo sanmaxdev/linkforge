@@ -27,7 +27,7 @@ class Demo
      */
     private const BLOCKED = [
         // Admin: every screen is explorable (GETs pass), but no write changes demo state.
-        'admin.settings',      // settings (incl. mail, license, the demo toggle itself)
+        'admin.settings',      // settings (incl. mail + the demo toggle itself)
         'admin.updates',       // the in-app updater
         'admin.languages',     // language file editing
         'admin.users.update', 'admin.users.destroy',         // mutate / delete accounts
@@ -60,7 +60,7 @@ class Demo
 
     public static function buyUrl(): string
     {
-        return (string) (config('linkforge.demo_buy_url') ?: 'https://codecanyon.net');
+        return (string) (config('linkforge.demo_buy_url') ?: 'https://github.com/sanmaxdev/linkforge');
     }
 
     /** Is a write to this route blocked in demo mode? */

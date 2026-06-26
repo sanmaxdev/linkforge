@@ -2,11 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Setting;
-use App\Services\LicenseService;
 use App\Support\Installer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class InstallerTest extends TestCase
@@ -17,7 +14,7 @@ class InstallerTest extends TestCase
     {
         parent::setUp();
         $this->withoutVite();
-        $this->seed(); // plans/settings/admin so the install flow has a 'business' plan
+        $this->seed(); // plans/settings so the install flow has a 'business' plan
         // Simulate a fresh, not-yet-installed upload (the base TestCase marks installed).
         @unlink(Installer::lockPath());
     }
@@ -59,116 +56,25 @@ class InstallerTest extends TestCase
     public function test_account_step_requires_database_step_first(): void
     {
         $this->get(route('install.account'))->assertRedirect(route('install.database'));
-        $this->get(route('install.license'))->assertRedirect(route('install.account'));
     }
 
-    public function test_admin_account_then_license_then_finish(): void
+    public function test_admin_account_completes_the_install(): void
     {
         $this->withSession(['install.db' => true]);
 
+        // Creating the admin account is the final step — it goes straight to the finish
+        // (no license/purchase-code step in the open-source build).
         $this->post(route('install.account.save'), [
             'name' => 'Site Owner',
             'email' => 'owner@example.com',
             'password' => 'supersecret',
             'password_confirmation' => 'supersecret',
-        ])->assertRedirect(route('install.license'));
+        ])->assertRedirect(route('install.complete'));
 
         $this->assertDatabaseHas('users', ['email' => 'owner@example.com', 'role' => 'admin', 'status' => 'active']);
 
-        // A license is now required: an empty code is rejected and install is not sealed.
-        $this->post(route('install.license.save'), ['purchase_code' => ''])
-            ->assertSessionHasErrors('purchase_code');
-        $this->assertFalse(Installer::isInstalled());
-
-        // A valid purchase code (verified via the relay) completes the install.
-        Http::fake(['*/verify' => Http::response(['valid' => true, 'license' => ['domain' => 'example.com']])]);
-        $this->post(route('install.license.save'), ['purchase_code' => '8f3c9d21-1a2b-4c5d-9e8f-0a1b2c3d4e5f'])
-            ->assertRedirect(route('install.complete'));
-
         $this->get(route('install.complete'))->assertOk()->assertSee('installed');
-
         $this->assertTrue(Installer::isInstalled());
-    }
-
-    public function test_license_service_rejects_a_malformed_code(): void
-    {
-        $result = app(LicenseService::class)->verify('not-a-code');
-        $this->assertFalse($result['valid']);
-    }
-
-    public function test_license_service_fails_open_without_a_relay(): void
-    {
-        config(['linkforge.license.relay_url' => '']);
-
-        $result = app(LicenseService::class)->verify('8f3c9d21-1a2b-4c5d-9e8f-0a1b2c3d4e5f');
-
-        $this->assertTrue($result['valid']);
-        $this->assertTrue($result['unverified'] ?? false);
-    }
-
-    public function test_license_service_verifies_against_the_relay(): void
-    {
-        // A "valid" verdict is only trusted as confirmed when it carries a signature the
-        // app's baked public key verifies (otherwise it's stored as merely "unverified").
-        $kp = sodium_crypto_sign_keypair();
-        config([
-            'linkforge.license.relay_url' => 'https://relay.test',
-            'linkforge.license.verify_public_key' => base64_encode(sodium_crypto_sign_publickey($kp)),
-        ]);
-        $code = '8f3c9d21-1a2b-4c5d-9e8f-0a1b2c3d4e5f';
-        $domain = 'buyer.test';
-        $issuedAt = gmdate('c');
-        $sig = base64_encode(sodium_crypto_sign_detached(
-            'lf-license-v1|'.$code.'|'.$domain.'|valid|'.$issuedAt,
-            sodium_crypto_sign_secretkey($kp)
-        ));
-        Http::fake([
-            'relay.test/verify' => Http::response([
-                'valid' => true, 'license' => ['buyer' => 'bob', 'item_id' => '123'], 'issued_at' => $issuedAt, 'signature' => $sig,
-            ], 200),
-        ]);
-
-        $result = app(LicenseService::class)->verify($code, $domain);
-
-        $this->assertTrue($result['valid']);
-        $this->assertFalse($result['unverified'] ?? false);
-        $this->assertSame('bob', $result['license']['buyer'] ?? null);
-    }
-
-    public function test_license_service_hard_fails_on_a_relay_rejection(): void
-    {
-        config(['linkforge.license.relay_url' => 'https://relay.test']);
-        Http::fake([
-            'relay.test/verify' => Http::response(['valid' => false, 'message' => 'Purchase code not found.'], 422),
-        ]);
-
-        $result = app(LicenseService::class)->verify('8f3c9d21-1a2b-4c5d-9e8f-0a1b2c3d4e5f');
-
-        $this->assertFalse($result['valid']);
-        $this->assertStringContainsString('not found', $result['message']);
-    }
-
-    public function test_license_service_fails_open_on_relay_error(): void
-    {
-        config(['linkforge.license.relay_url' => 'https://relay.test']);
-        Http::fake([
-            'relay.test/verify' => Http::response('upstream down', 502),
-        ]);
-
-        $result = app(LicenseService::class)->verify('8f3c9d21-1a2b-4c5d-9e8f-0a1b2c3d4e5f');
-
-        $this->assertTrue($result['valid']);
-        $this->assertTrue($result['unverified'] ?? false);
-    }
-
-    public function test_license_service_stores_status(): void
-    {
-        $svc = app(LicenseService::class);
-        $code = '8f3c9d21-1a2b-4c5d-9e8f-0a1b2c3d4e5f';
-        $svc->store($code, ['valid' => true, 'unverified' => true, 'message' => 'ok']);
-
-        $this->assertSame($code, Setting::get('license_code'));
-        $this->assertSame('unverified', Setting::get('license_status'));
     }
 
     public function test_write_env_updates_and_appends_keys(): void

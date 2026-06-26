@@ -7,7 +7,7 @@
             <span class="h-2 w-2 animate-pulse rounded-full bg-white"></span>
             You're exploring a live demo of {{ config('linkforge.name') }} — sample data resets periodically.
         </span>
-        <a href="{{ $lfBuy }}" target="_blank" rel="noopener" class="rounded-md bg-white px-3 py-0.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-50">Buy now →</a>
+        <a href="{{ $lfBuy }}" target="_blank" rel="noopener" class="rounded-md bg-white px-3 py-0.5 text-xs font-semibold text-brand-700 transition hover:bg-brand-50">View source →</a>
     </div>
 
     {{-- One-time conversion popup --}}
@@ -17,9 +17,9 @@
                 <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13.19 8.69a4.5 4.5 0 0 1 1.24 7.24l-4.5 4.5a4.5 4.5 0 0 1-6.36-6.36l1.75-1.76M10.81 15.31a4.5 4.5 0 0 1-1.24-7.24l4.5-4.5a4.5 4.5 0 0 1 6.36 6.36l-1.75 1.76"/></svg>
             </span>
             <h3 class="mt-4 text-lg font-bold text-slate-900">Like what you see?</h3>
-            <p class="mt-2 text-sm text-slate-500">This is the live demo of {{ config('linkforge.name') }}. Get the full self-hosted source — branded domains, deep analytics, QR studio, monetization, affiliates and more.</p>
+            <p class="mt-2 text-sm text-slate-500">This is the live demo of {{ config('linkforge.name') }}. It's free and open source — self-host your own with branded domains, deep analytics, a QR studio, monetization, affiliates and more.</p>
             <div class="mt-5 flex flex-col gap-2">
-                <a href="{{ $lfBuy }}" target="_blank" rel="noopener" class="lf-btn">Get {{ config('linkforge.name') }} →</a>
+                <a href="{{ $lfBuy }}" target="_blank" rel="noopener" class="lf-btn">View on GitHub →</a>
                 <button type="button" data-demo-dismiss class="text-sm font-medium text-slate-400 hover:text-slate-600">Keep exploring</button>
             </div>
         </div>

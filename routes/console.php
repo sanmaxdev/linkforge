@@ -22,7 +22,3 @@ Schedule::command('ai:weekly-insights')->weeklyOn(1, '07:00')->withoutOverlappin
 Schedule::command('geoip:update')->monthlyOn(3, '04:00')->withoutOverlapping();
 // Keep the public demo fresh (no-op unless demo mode is on).
 Schedule::command('demo:reset')->hourly()->withoutOverlapping();
-// Quietly check the update server once a day and surface a badge (never auto-applies).
-Schedule::command('update:check')->dailyAt('05:00')->withoutOverlapping();
-// Re-verify the license weekly (fail-open; only a definitive revoke flips status to invalid).
-Schedule::command('license:verify')->weeklyOn(1, '04:30')->withoutOverlapping();

@@ -4,40 +4,47 @@ use App\Http\Controllers\AbuseReportController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdvertisementController;
-use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Admin\BillingController as AdminBillingController;
+use App\Http\Controllers\Admin\BroadcastController;
+use App\Http\Controllers\Admin\HelpArticleController;
 use App\Http\Controllers\Admin\LanguageController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\UpdateController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\AiController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ApiTokenController;
+use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\BillingController;
-use App\Http\Controllers\AffiliateController;
 use App\Http\Controllers\BioController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BulkLinkController;
 use App\Http\Controllers\CampaignController;
-use App\Http\Controllers\HelpController;
-use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DemoController;
 use App\Http\Controllers\DeveloperController;
+use App\Http\Controllers\DocsController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\GuestShortenController;
+use App\Http\Controllers\HelpController;
 use App\Http\Controllers\Install\InstallController;
 use App\Http\Controllers\LinkController;
-use App\Http\Controllers\MonetizationController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\MonetizationController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\PixelController;
 use App\Http\Controllers\QrController;
-use App\Http\Controllers\DocsController;
 use App\Http\Controllers\RedirectController;
+use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\WebhookController;
+use App\Services\Auth\SocialProviders;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -49,8 +56,6 @@ Route::middleware('install.guard')->prefix('install')->name('install.')->group(f
     Route::post('/database', [InstallController::class, 'saveDatabase'])->name('database.save');
     Route::get('/account', [InstallController::class, 'account'])->name('account');
     Route::post('/account', [InstallController::class, 'saveAccount'])->name('account.save');
-    Route::get('/license', [InstallController::class, 'license'])->name('license');
-    Route::post('/license', [InstallController::class, 'saveLicense'])->name('license.save');
     Route::get('/complete', [InstallController::class, 'complete'])->name('complete');
 });
 
@@ -166,7 +171,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/account', [AccountController::class, 'destroy'])->name('account.destroy');
 
     // Connected accounts (link / unlink a social provider to the signed-in user).
-    foreach (\App\Services\Auth\SocialProviders::keys() as $socialProvider) {
+    foreach (SocialProviders::keys() as $socialProvider) {
         Route::get("/account/connections/{$socialProvider}", [SocialAuthController::class, 'connect'])->defaults('provider', $socialProvider)->middleware('throttle:30,1')->name("account.{$socialProvider}.connect");
         Route::delete("/account/connections/{$socialProvider}", [SocialAuthController::class, 'disconnect'])->defaults('provider', $socialProvider)->name("account.{$socialProvider}.disconnect");
     }
@@ -177,30 +182,30 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
-    Route::get('/affiliate', [\App\Http\Controllers\Admin\AffiliateController::class, 'index'])->name('affiliate');
-    Route::put('/affiliate/commissions/{commission}', [\App\Http\Controllers\Admin\AffiliateController::class, 'updateCommission'])->name('affiliate.commission');
-    Route::put('/affiliate/payouts/{payout}', [\App\Http\Controllers\Admin\AffiliateController::class, 'updatePayout'])->name('affiliate.payout');
+    Route::get('/affiliate', [App\Http\Controllers\Admin\AffiliateController::class, 'index'])->name('affiliate');
+    Route::put('/affiliate/commissions/{commission}', [App\Http\Controllers\Admin\AffiliateController::class, 'updateCommission'])->name('affiliate.commission');
+    Route::put('/affiliate/payouts/{payout}', [App\Http\Controllers\Admin\AffiliateController::class, 'updatePayout'])->name('affiliate.payout');
 
-    Route::get('/blog', [\App\Http\Controllers\Admin\PostController::class, 'index'])->name('blog.index');
-    Route::get('/blog/create', [\App\Http\Controllers\Admin\PostController::class, 'create'])->name('blog.create');
-    Route::post('/blog', [\App\Http\Controllers\Admin\PostController::class, 'store'])->name('blog.store');
-    Route::get('/blog/{post}/edit', [\App\Http\Controllers\Admin\PostController::class, 'edit'])->name('blog.edit');
-    Route::put('/blog/{post}', [\App\Http\Controllers\Admin\PostController::class, 'update'])->name('blog.update');
-    Route::delete('/blog/{post}', [\App\Http\Controllers\Admin\PostController::class, 'destroy'])->name('blog.destroy');
+    Route::get('/blog', [PostController::class, 'index'])->name('blog.index');
+    Route::get('/blog/create', [PostController::class, 'create'])->name('blog.create');
+    Route::post('/blog', [PostController::class, 'store'])->name('blog.store');
+    Route::get('/blog/{post}/edit', [PostController::class, 'edit'])->name('blog.edit');
+    Route::put('/blog/{post}', [PostController::class, 'update'])->name('blog.update');
+    Route::delete('/blog/{post}', [PostController::class, 'destroy'])->name('blog.destroy');
 
-    Route::get('/help', [\App\Http\Controllers\Admin\HelpArticleController::class, 'index'])->name('help.index');
-    Route::get('/help/create', [\App\Http\Controllers\Admin\HelpArticleController::class, 'create'])->name('help.create');
-    Route::post('/help', [\App\Http\Controllers\Admin\HelpArticleController::class, 'store'])->name('help.store');
-    Route::get('/help/{article}/edit', [\App\Http\Controllers\Admin\HelpArticleController::class, 'edit'])->name('help.edit');
-    Route::put('/help/{article}', [\App\Http\Controllers\Admin\HelpArticleController::class, 'update'])->name('help.update');
-    Route::delete('/help/{article}', [\App\Http\Controllers\Admin\HelpArticleController::class, 'destroy'])->name('help.destroy');
+    Route::get('/help', [HelpArticleController::class, 'index'])->name('help.index');
+    Route::get('/help/create', [HelpArticleController::class, 'create'])->name('help.create');
+    Route::post('/help', [HelpArticleController::class, 'store'])->name('help.store');
+    Route::get('/help/{article}/edit', [HelpArticleController::class, 'edit'])->name('help.edit');
+    Route::put('/help/{article}', [HelpArticleController::class, 'update'])->name('help.update');
+    Route::delete('/help/{article}', [HelpArticleController::class, 'destroy'])->name('help.destroy');
 
-    Route::get('/pages', [\App\Http\Controllers\Admin\PageController::class, 'index'])->name('pages.index');
-    Route::get('/pages/create', [\App\Http\Controllers\Admin\PageController::class, 'create'])->name('pages.create');
-    Route::post('/pages', [\App\Http\Controllers\Admin\PageController::class, 'store'])->name('pages.store');
-    Route::get('/pages/{page}/edit', [\App\Http\Controllers\Admin\PageController::class, 'edit'])->name('pages.edit');
-    Route::put('/pages/{page}', [\App\Http\Controllers\Admin\PageController::class, 'update'])->name('pages.update');
-    Route::delete('/pages/{page}', [\App\Http\Controllers\Admin\PageController::class, 'destroy'])->name('pages.destroy');
+    Route::get('/pages', [App\Http\Controllers\Admin\PageController::class, 'index'])->name('pages.index');
+    Route::get('/pages/create', [App\Http\Controllers\Admin\PageController::class, 'create'])->name('pages.create');
+    Route::post('/pages', [App\Http\Controllers\Admin\PageController::class, 'store'])->name('pages.store');
+    Route::get('/pages/{page}/edit', [App\Http\Controllers\Admin\PageController::class, 'edit'])->name('pages.edit');
+    Route::put('/pages/{page}', [App\Http\Controllers\Admin\PageController::class, 'update'])->name('pages.update');
+    Route::delete('/pages/{page}', [App\Http\Controllers\Admin\PageController::class, 'destroy'])->name('pages.destroy');
     Route::get('/users', [AdminUserController::class, 'index'])->name('users');
     Route::get('/users/export', [AdminUserController::class, 'export'])->name('users.export');
     Route::post('/users/bulk', [AdminUserController::class, 'bulk'])->name('users.bulk');
@@ -240,16 +245,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
     Route::put('/reports/{report}', [AdminController::class, 'updateReport'])->name('reports.update');
     Route::get('/audit', [AdminController::class, 'audit'])->name('audit');
-    Route::get('/broadcast', [\App\Http\Controllers\Admin\BroadcastController::class, 'index'])->name('broadcast');
-    Route::post('/broadcast', [\App\Http\Controllers\Admin\BroadcastController::class, 'send'])->name('broadcast.send');
+    Route::get('/broadcast', [BroadcastController::class, 'index'])->name('broadcast');
+    Route::post('/broadcast', [BroadcastController::class, 'send'])->name('broadcast.send');
     Route::get('/updates', [UpdateController::class, 'index'])->name('updates');
     Route::post('/updates', [UpdateController::class, 'upload'])->name('updates.upload');
     Route::post('/updates/apply', [UpdateController::class, 'apply'])->name('updates.apply');
     Route::post('/updates/discard', [UpdateController::class, 'discard'])->name('updates.discard');
-    Route::post('/updates/check', [UpdateController::class, 'checkRemote'])->name('updates.check');
-    Route::post('/updates/download', [UpdateController::class, 'downloadRemote'])->name('updates.download');
-    Route::get('/license', [\App\Http\Controllers\Admin\LicenseController::class, 'show'])->name('license');
-    Route::post('/license/recheck', [\App\Http\Controllers\Admin\LicenseController::class, 'recheck'])->name('license.recheck');
     Route::get('/languages', [LanguageController::class, 'index'])->name('languages');
     Route::post('/languages', [LanguageController::class, 'store'])->name('languages.store');
     Route::post('/languages/default', [LanguageController::class, 'setDefault'])->name('languages.default');
@@ -277,7 +278,7 @@ Route::post('/shorten', [GuestShortenController::class, 'store'])->middleware('t
 Route::get('/ref/{code}', [ReferralController::class, 'track'])->middleware('throttle:30,1')->name('referral.track')->where('code', '[A-Za-z0-9]+');
 
 // Public: one-click demo sign-in (only active when demo mode is on; 404s otherwise).
-Route::get('/demo/login/{role}', [\App\Http\Controllers\DemoController::class, 'login'])
+Route::get('/demo/login/{role}', [DemoController::class, 'login'])
     ->middleware('throttle:30,1')->name('demo.login')->where('role', 'admin|user');
 
 // Public: blog + help center (content marketing + self-serve support).
@@ -285,15 +286,15 @@ Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show')->where('slug', '[A-Za-z0-9\-]+');
 Route::get('/help', [HelpController::class, 'index'])->name('help.index');
 Route::get('/help/{slug}', [HelpController::class, 'show'])->name('help.show')->where('slug', '[A-Za-z0-9\-]+');
-Route::get('/page/{slug}', [App\Http\Controllers\PageController::class, 'show'])->name('page.show')->where('slug', '[A-Za-z0-9\-]+');
-Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
-Route::get('/robots.txt', [App\Http\Controllers\SitemapController::class, 'robots'])->name('robots');
+Route::get('/page/{slug}', [PageController::class, 'show'])->name('page.show')->where('slug', '[A-Za-z0-9\-]+');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 // Public: switch the UI language (guest + authenticated).
 Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch')->where('locale', '[A-Za-z_-]+');
 
 // Public: social-login OAuth (Google, GitHub, Facebook — guest accessible; 404s when disabled).
-foreach (\App\Services\Auth\SocialProviders::keys() as $socialProvider) {
+foreach (SocialProviders::keys() as $socialProvider) {
     Route::get("/auth/{$socialProvider}/redirect", [SocialAuthController::class, 'redirect'])->defaults('provider', $socialProvider)->middleware('throttle:30,1')->name("auth.{$socialProvider}.redirect");
     Route::get("/auth/{$socialProvider}/callback", [SocialAuthController::class, 'callback'])->defaults('provider', $socialProvider)->middleware('throttle:30,1')->name("auth.{$socialProvider}.callback");
 }

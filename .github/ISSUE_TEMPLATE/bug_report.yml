@@ -1,0 +1,44 @@
+name: Bug report
+description: Report a problem so we can fix it
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug! Please do not include any secrets (keys, passwords, `.env` contents).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See error ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: LinkForge version
+      placeholder: e.g. 1.0.38 (Admin → Updates) or a commit hash
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: PHP version, database (MySQL/MariaDB + version), web server, OS, browser
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / screenshots
+      description: From `storage/logs/laravel.log` or the browser console (redact anything sensitive).
+      render: shell

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & ideas
+    url: https://github.com/sanmaxdev/linkforge/discussions
+    about: Ask questions, share setups, and discuss ideas in Discussions.
+  - name: Security vulnerability
+    url: https://github.com/sanmaxdev/linkforge/security/advisories/new
+    about: Report security issues privately — please do NOT open a public issue.

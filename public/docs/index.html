@@ -56,7 +56,7 @@
           <a href="#install-vps">VPS / generic server</a>
           <a href="#install-cron">Cron / scheduler</a>
           <a href="#install-checklist">Post-install checklist</a>
-          <a href="#install-license">License &amp; purchase code</a>
+          <a href="#license">License</a>
         </div>
       </div>
 
@@ -253,7 +253,7 @@
 
       <section class="block" id="included">
         <h2 class="sec"><a class="anchor-h" href="#included">What's included in your download</a></h2>
-        <p>Your CodeCanyon download contains everything needed to go live:</p>
+        <p>The LinkForge repository (or a release archive) contains everything needed to go live:</p>
         <div class="tablewrap"><table>
           <thead><tr><th>Item</th><th>Description</th></tr></thead>
           <tbody>
@@ -379,10 +379,7 @@
         <p>Create your owner login - name, email and password. This is your admin account; you'll use it to sign in and manage everything.</p>
         <figure><img src="images/install-admin.png" alt="Installer - creating the administrator account." loading="lazy"><figcaption>Installer - creating the administrator account.</figcaption></figure>
 
-        <h3>4 · License</h3>
-        <p>Enter your <strong>CodeCanyon purchase code</strong> to complete the install. A valid code is <strong>required</strong> - there is no skip - so have it ready before you start. See <a href="#install-license">License &amp; purchase code</a> for where to find the code and how verification works.</p>
-
-        <h3>5 · Done</h3>
+        <h3>4 · Done</h3>
         <p>The installer seals itself (so it can't be run again) and hands you a <strong>Sign in</strong> button. Log in with the admin account you just created - you'll land on your new dashboard.</p>
         <div class="callout callout--warn">
           <span class="callout__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span>
@@ -455,26 +452,17 @@ sudo chmod -R 775 storage bootstrap/cache</code></pre></div>
           <li>✅ <strong>Email configured</strong> - set SMTP under <a href="#cfg-email">Admin → Settings → Email</a> and send a test, so password resets and notifications work.</li>
           <li>✅ <strong>Branding</strong> - upload your logo and pick a theme under <a href="#cfg-appearance">Appearance</a>.</li>
           <li>✅ <strong>Payments</strong> (SaaS only) - connect a gateway under <a href="#cfg-payments">Billing</a> and review your <a href="#cfg-plans">plans</a>.</li>
-          <li>✅ <strong>Purchase code</strong> - entered during install (it is required), so your copy is registered for updates and support.</li>
           <li>✅ <strong>Backups</strong> - set up a routine database + files backup (see <a href="#backups">Backups</a>).</li>
         </ul>
       </section>
 
-      <section class="block" id="install-license">
-        <h2 class="sec"><a class="anchor-h" href="#install-license">License &amp; purchase code</a></h2>
-        <p>LinkForge is sold under the standard Envato / CodeCanyon license. During install you <strong>must</strong> enter your <strong>purchase code</strong> to register your copy and finish setup. It is required, and there is no skip, so have it ready before you begin.</p>
-        <h3>Where to find your purchase code</h3>
-        <ol class="steps">
-          <li>Sign in to <a href="https://codecanyon.net" target="_blank" rel="noopener">CodeCanyon</a> and open <strong>Downloads</strong> from your account menu.</li>
-          <li>Find LinkForge and click <strong>Download → License certificate &amp; purchase code</strong> (PDF or text).</li>
-          <li>Copy the <strong>Item Purchase Code</strong> (a long code like <code>1a2b3c4d-…</code>) and paste it into the installer's License step.</li>
-        </ol>
-        <h3>How verification works</h3>
-        <p>When you submit the code, the installer verifies it against Envato through a small verification service and then completes setup. A valid code is required to finish: an empty, malformed, or genuinely invalid code is rejected with an error so you can correct it.</p>
-        <p>Verification <strong>fails open for outages only</strong>. If the verification service itself is temporarily unreachable, a network error will not block your install, and once installed your site keeps running normally with no ongoing license checks that could ever lock you out.</p>
+      <section class="block" id="license">
+        <h2 class="sec"><a class="anchor-h" href="#license">License</a></h2>
+        <p>LinkForge is free and open-source software, released under the <strong>MIT License</strong>. You are free to self-host it, modify it to fit your needs, and redistribute it. There is no activation step or license check anywhere in the application - install it and run it.</p>
+        <p>The full license text is in the <span class="path">LICENSE</span> file in the <a href="https://github.com/sanmaxdev/linkforge" target="_blank" rel="noopener">repository</a>.</p>
         <div class="callout callout--note">
           <span class="callout__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
-          <div>A purchase code is required to install; there is no skip. One regular license covers one running site, so for a second site buy an additional license. Moving a site to a new domain is fine: enter the same code when you reinstall. Questions? Reach us through your CodeCanyon item's support tab.</div>
+          <div>The MIT License permits commercial and private use, modification, and distribution. It asks only that the copyright notice and license text be preserved in copies, and it provides the software "as is" without warranty.</div>
         </div>
       </section>
 
@@ -1178,11 +1166,11 @@ if (hash_equals($expected, $signature)) {
       <section class="block" id="update">
         <p class="sec-kicker">Maintenance</p>
         <h2 class="sec"><a class="anchor-h" href="#update">Updating LinkForge</a></h2>
-        <p>When a new version is released, you can update in one of two ways. Both preserve your data, <span class="path">.env</span>, uploads and license.</p>
+        <p>When a new version is released, you can update in one of two ways. Both preserve your data, <span class="path">.env</span> and uploads.</p>
 
         <h3>Option A - In-app updater (easiest)</h3>
         <ol class="steps">
-          <li>Download the <strong>update package</strong> (<span class="path">linkforge-update-vX.Y.Z.zip</span>) from your CodeCanyon downloads.</li>
+          <li>Download the <strong>update package</strong> (<span class="path">linkforge-update-vX.Y.Z.zip</span>) from the <a href="https://github.com/sanmaxdev/linkforge/releases" target="_blank" rel="noopener">GitHub Releases page</a>.</li>
           <li>Go to <strong>Admin → Updates</strong>. It shows your current version and the server's maximum upload size.</li>
           <li><strong>Upload</strong> the update package. LinkForge inspects it and lists any issues (e.g. PHP version, permissions).</li>
           <li>Click <strong>Apply</strong>. LinkForge backs up replaced files, runs any new database migrations, clears caches and updates the version. Or <strong>Discard</strong> to cancel.</li>
@@ -1287,7 +1275,7 @@ if (hash_equals($expected, $signature)) {
         <h2 class="sec"><a class="anchor-h" href="#changelog">Changelog</a></h2>
         <div class="callout callout--note">
           <span class="callout__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
-          <div>The authoritative, up-to-date changelog is on the LinkForge CodeCanyon item page under the <em>Comments / Updates</em> section. Notable releases are summarized here.</div>
+          <div>The authoritative, up-to-date changelog is on the <a href="https://github.com/sanmaxdev/linkforge/releases" target="_blank" rel="noopener">GitHub Releases page</a>. Notable releases are summarized here.</div>
         </div>
         <h4>Version 1.0 - Initial release</h4>
         <ul>
@@ -1302,7 +1290,7 @@ if (hash_equals($expected, $signature)) {
 
       <section class="block" id="support">
         <h2 class="sec"><a class="anchor-h" href="#support">Support &amp; contact</a></h2>
-        <p>We're glad to help. The fastest route is your CodeCanyon item's <strong>Support</strong> tab - that ties your message to your purchase so we can respond quickly. You can also email us directly at <a href="mailto:hello@sangeeth.biz">hello@sangeeth.biz</a>, or visit our website at <a href="https://sangeeth.biz" target="_blank" rel="noopener">sangeeth.biz</a>.</p>
+        <p>LinkForge is community-supported on GitHub. To report a bug or request a feature, open an issue on the <a href="https://github.com/sanmaxdev/linkforge/issues" target="_blank" rel="noopener">GitHub Issues</a> tracker. For questions, usage help, and general conversation, use <a href="https://github.com/sanmaxdev/linkforge/discussions" target="_blank" rel="noopener">GitHub Discussions</a>.</p>
         <h3>Before you reach out, please include</h3>
         <ul>
           <li>Your <strong>LinkForge version</strong> (shown in <em>Admin → Updates</em>).</li>
@@ -1310,11 +1298,11 @@ if (hash_equals($expected, $signature)) {
           <li>The <strong>exact steps</strong> to reproduce, and any error message or screenshot.</li>
           <li>Whether you've checked the relevant <a href="#troubleshooting">Troubleshooting</a> row.</li>
         </ul>
-        <p>Item support covers installation help, bug fixes and answering usage questions. Significant customization of your install is outside standard support, but we're happy to point you in the right direction. Thank you for choosing LinkForge!</p>
+        <p>The community can help with installation, bug reports and usage questions. As an open-source project, large custom development work is beyond the scope of community support, but contributions and pull requests are always welcome. Thank you for using LinkForge!</p>
       </section>
 
       <footer class="docfooter">
-        <p>LinkForge Documentation · Version 1.0 · This guide is included with your purchase and works fully offline.</p>
+        <p>LinkForge Documentation · Version 1.0 · Free and open-source under the MIT License · Works fully offline.</p>
       </footer>
 
     </main>

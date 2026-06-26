@@ -15,8 +15,6 @@
             </div>
             @if ($pending)
                 <span class="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-700">Update pending</span>
-            @elseif ($updateAvailable && $availableVersion)
-                <span class="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-700">v{{ $availableVersion }} available</span>
             @else
                 <span class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-700">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
@@ -24,37 +22,6 @@
                 </span>
             @endif
         </div>
-
-        {{-- Online updates (pull from the LinkForge update server) --}}
-        @if ($remoteConfigured)
-            <div class="lf-card p-6">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <h3 class="text-sm font-semibold text-slate-900">Online updates</h3>
-                        <p class="mt-1 text-xs text-slate-500">Pull new releases straight from the LinkForge update server. Every package is verified by digital signature before it can be applied — you still review and click Apply.</p>
-                        @if ($lastChecked)
-                            <p class="mt-2 text-xs text-slate-400">Last checked {{ \Illuminate\Support\Carbon::parse($lastChecked)->diffForHumans() }}.</p>
-                        @endif
-                    </div>
-                </div>
-
-                <x-demo-lock>Checking and downloading updates is disabled in the live demo.</x-demo-lock>
-
-                <div class="mt-4 flex flex-wrap items-center gap-3">
-                    <form method="POST" action="{{ route('admin.updates.check') }}">
-                        @csrf
-                        <button type="submit" @disabled(\App\Support\Demo::enabled()) class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">Check for updates</button>
-                    </form>
-                    @if ($updateAvailable && $availableVersion && ! $pending)
-                        <form method="POST" action="{{ route('admin.updates.download') }}"
-                              data-confirm="Download and verify update v{{ $availableVersion }}? It will be staged below for you to review, then apply." data-confirm-ok="Download">
-                            @csrf
-                            <button type="submit" @disabled(\App\Support\Demo::enabled()) class="rounded-lg bg-brand-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50">Download &amp; review v{{ $availableVersion }}</button>
-                        </form>
-                    @endif
-                </div>
-            </div>
-        @endif
 
         {{-- Pending update --}}
         @if ($pending)
@@ -119,9 +86,9 @@
 
         {{-- Upload --}}
         <div class="lf-card p-6">
-            <h3 class="mb-1 text-sm font-semibold text-slate-900">{{ $pending ? 'Replace the pending package' : 'Manual upload (offline)' }}</h3>
+            <h3 class="mb-1 text-sm font-semibold text-slate-900">{{ $pending ? 'Replace the pending package' : 'Upload an update package' }}</h3>
             <x-demo-lock>Uploading and applying updates is disabled in the live demo.</x-demo-lock>
-            <p class="mb-2 text-xs text-slate-400">Prefer <span class="font-medium text-slate-600">Online updates</span> above. Use this only when the server can't reach the update channel, or to install a package you downloaded by hand. Select the update <code class="text-xs">.zip</code>; it is inspected on upload, then you review and apply it here.</p>
+            <p class="mb-2 text-xs text-slate-400">Download a release package, then select the update <code class="text-xs">.zip</code> here. It is inspected on upload, and you review and apply it on this screen.</p>
             @if (! empty($maxUpload))
                 <p class="mb-4 text-xs text-slate-400">Max upload size on this server: <span class="font-medium text-slate-600">{{ number_format($maxUpload / 1048576, 0) }} MB</span>. Update packages are small and fit comfortably.</p>
             @endif

@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
 use App\Models\UpdateLog;
-use App\Services\Update\RemoteUpdate;
 use App\Services\Update\Updater;
-use App\Support\Demo;
 use Illuminate\Http\Request;
 
 class UpdateController extends Controller
@@ -17,7 +14,7 @@ class UpdateController extends Controller
         return storage_path('app/updates/pending.zip');
     }
 
-    public function index(Updater $updater, RemoteUpdate $remote)
+    public function index(Updater $updater)
     {
         $pending = null;
         $issues = [];
@@ -38,56 +35,7 @@ class UpdateController extends Controller
             'issues' => $issues,
             'maxUpload' => $this->maxUploadBytes(),
             'history' => UpdateLog::with('user')->latest('id')->take(20)->get(),
-            'remoteConfigured' => $remote->configured(),
-            'updateAvailable' => Setting::get('update_available') === '1',
-            'availableVersion' => (string) Setting::get('update_available_version'),
-            'lastChecked' => Setting::get('update_last_checked'),
         ]);
-    }
-
-    /** Ask the relay if a newer version is available (sets a badge; never applies). */
-    public function checkRemote(RemoteUpdate $remote)
-    {
-        if (Demo::enabled()) {
-            return back()->with('error', 'Updates are disabled in demo mode.');
-        }
-
-        $res = $remote->check();
-        if (! empty($res['error'])) {
-            return back()->with('error', $res['error']);
-        }
-        if (! $res['available']) {
-            return back()->with('status', "You're on the latest version.");
-        }
-
-        $msg = 'Update available: version '.((string) ($res['release']['version'] ?? '')).'. Download it below to review and apply.';
-        if (! empty($res['support_expired'])) {
-            $msg .= ' (Your Envato support window has lapsed; updates still work, but consider renewing.)';
-        }
-
-        return back()->with('status', $msg);
-    }
-
-    /** Download + fully verify the latest release and stage it for the review -> Apply flow. */
-    public function downloadRemote(RemoteUpdate $remote)
-    {
-        if (Demo::enabled()) {
-            return back()->with('error', 'Updates are disabled in demo mode.');
-        }
-
-        $res = $remote->check();
-        if (! empty($res['error']) || empty($res['available'])) {
-            return back()->with('error', $res['error'] ?? 'No update is available right now.');
-        }
-
-        try {
-            $remote->downloadAndStage($res['release']);
-        } catch (\Throwable $e) {
-            return back()->with('error', 'Download failed: '.$e->getMessage());
-        }
-
-        return redirect()->route('admin.updates')
-            ->with('status', 'Update '.((string) ($res['release']['version'] ?? '')).' downloaded and verified. Review it below, then Apply.');
     }
 
     /** The effective max upload size PHP allows here (min of upload_max_filesize / post_max_size). */

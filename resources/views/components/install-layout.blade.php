@@ -1,6 +1,6 @@
 @props(['title' => 'Install', 'step' => 'welcome'])
 @php
-    $steps = ['welcome' => 'Requirements', 'database' => 'Database', 'account' => 'Admin', 'license' => 'License', 'complete' => 'Done'];
+    $steps = ['welcome' => 'Requirements', 'database' => 'Database', 'account' => 'Admin', 'complete' => 'Done'];
     $currentIndex = array_search($step, array_keys($steps), true) ?: 0;
 @endphp
 <!DOCTYPE html>

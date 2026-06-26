@@ -1,0 +1,3 @@
+# Default owner for everything in the repo. Pull requests automatically request a
+# review from @sanmaxdev, and branch protection requires that review before merge.
+* @sanmaxdev

@@ -2,8 +2,8 @@
 
 LinkForge bundles the open-source software and data assets listed below. Each is
 distributed under its own license, reproduced or linked here as required. LinkForge
-itself is sold under the Envato / CodeCanyon license; the notices below apply only to
-the third-party components.
+itself is released under the MIT License (see the LICENSE file); the notices below
+apply only to the third-party components.
 
 ---
 

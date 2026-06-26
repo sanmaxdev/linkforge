@@ -408,14 +408,14 @@
             <span class="text-xs font-semibold tracking-widest uppercase" style="color: var(--color-brand-400)">Own it, end to end</span>
             <h2 class="mx-auto mt-3 max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl">Your platform. Your server. Your data.</h2>
             <p class="mx-auto mt-4 max-w-2xl text-base text-white/70">
-                No monthly per-link rental, no vendor lock-in, no shipping your audience to someone else's cloud. Clean, readable code with nothing encrypted or obfuscated. Pay once, host anywhere, extend freely.
+                No monthly per-link rental, no vendor lock-in, no shipping your audience to someone else's cloud. Clean, readable code with nothing encrypted or obfuscated. Free and open source, host anywhere, extend freely.
             </p>
             <div class="mx-auto mt-12 grid max-w-4xl gap-5 sm:grid-cols-3">
                 @php
                     $own = [
-                        ['t' => 'Pay once', 'd' => 'A one-time license, not a forever subscription.'],
+                        ['t' => 'Free & open source', 'd' => 'MIT-licensed — use it, modify it, and ship it, no fees ever.'],
                         ['t' => 'Readable code', 'd' => 'No ionCube, no obfuscation. It is yours to audit and extend.'],
-                        ['t' => 'One-click updates', 'd' => 'A built-in updater keeps you current, on your schedule.'],
+                        ['t' => 'Built-in updater', 'd' => 'Upload a release package and apply it from the admin, on your schedule.'],
                     ];
                 @endphp
                 @foreach ($own as $o)
