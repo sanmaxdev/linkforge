@@ -23,7 +23,7 @@
         "bootstrap-icons": "^1.13.1",
         "flag-icons": "^7.5.0",
         "jspdf": "^4.2.1",
-        "lucide-static": "^1.18.0",
+        "lucide-static": "^1.21.0",
         "qr-code-styling": "^1.9.2",
         "simple-icons": "^16.23.0"
     }
