@@ -113,9 +113,20 @@ LinkForge includes a built-in demo mode that turns an install into a safe, read-
 
 ## Contributing
 
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for the dev setup, coding
-standards (Laravel Pint), and the PR process. All pull requests run the test suite and linter via CI and
-require a maintainer review before merge.
+Contributions of all kinds are welcome — code, translations, docs, bug reports, and ideas. 🙌
+
+**New here?** Browse the [good first issues](https://github.com/sanmaxdev/linkforge/labels/good%20first%20issue) —
+small, well-scoped tasks to get you started. Areas we'd especially love help with:
+
+- 🌍 **Translations** — LinkForge ships English & Spanish (`lang/*.json`) and is built for i18n. Adding a new
+  language, or wrapping more of the UI for translation, is a great first PR.
+- 🧪 **Tests** — broaden coverage of the link, analytics, and admin flows.
+- 📖 **Docs** — clarify the setup guides and in-app help.
+- ✨ **Features** — see [help wanted](https://github.com/sanmaxdev/linkforge/labels/help%20wanted) and the open issues.
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for the dev setup, coding standards (Laravel Pint), and the PR process.
+Every PR runs the test suite and linter via CI and gets a maintainer review before merge. By participating you
+agree to our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Security
 
