@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so the incremental update package can diff against the previous tag
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, gd, zip, sodium, bcmath, curl, intl, fileinfo
+          coverage: none
+          tools: composer:v2
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Derive version from tag
+        id: ver
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Install production dependencies + build assets
+        run: |
+          composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+          npm ci
+          npm run build
+
+      - name: Build install package (full)
+        run: bash .github/scripts/build-install-zip.sh "${{ steps.ver.outputs.version }}"
+
+      - name: Build update package (incremental)
+        run: bash .github/scripts/build-update-zip.sh "${{ steps.ver.outputs.version }}"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: LinkForge v${{ steps.ver.outputs.version }}
+          generate_release_notes: true
+          files: |
+            dist/linkforge-v${{ steps.ver.outputs.version }}.zip
+            dist/linkforge-update-v${{ steps.ver.outputs.version }}.zip

@@ -50,6 +50,22 @@ npm run build            # assets must compile
 4. CI (tests + lint + assets build) must pass, and a maintainer must approve before merge. `main` is
    protected — changes land only through reviewed PRs.
 
+## Releasing (maintainers)
+
+Releases are fully automated by [`.github/workflows/release.yml`](.github/workflows/release.yml).
+To cut a release:
+
+1. Bump the version in `config/linkforge.php` and merge it through a PR.
+2. Tag the merge commit and push the tag:
+   ```bash
+   git tag v1.1.0
+   git push origin v1.1.0
+   ```
+3. The `Release` workflow builds two artifacts and publishes a GitHub Release with auto-generated notes:
+   - **`linkforge-v<version>.zip`** — the full, self-hostable install package (extract into your web root).
+   - **`linkforge-update-v<version>.zip`** — an incremental package (only files changed since the previous
+     tag) for the in-app updater under **Admin → Updates**.
+
 ## Reporting bugs / requesting features
 
 Use the [issue templates](https://github.com/sanmaxdev/linkforge/issues/new/choose). For **security**
